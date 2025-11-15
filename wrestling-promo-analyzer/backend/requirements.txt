@@ -46,6 +46,15 @@ openai-whisper==20231117
 # FFmpeg Python wrapper
 ffmpeg-python==0.2.0
 
+# Computer vision for frame analysis
+opencv-python==4.8.1.78
+
+# MediaPipe for face/pose/hand detection (optional but recommended)
+mediapipe==0.10.8
+
+# Image processing
+Pillow==10.1.0
+
 # ============================================================================
 # DATA VALIDATION
 # ============================================================================
