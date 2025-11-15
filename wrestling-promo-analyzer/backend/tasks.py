@@ -25,6 +25,7 @@ from models import Video, Transcript, Analysis, ProcessingJob, Judge, Frame, Vis
 from utils.cost_tracking import calculate_cost
 from utils.frame_extraction import extract_and_analyze_frames
 from utils.visual_analysis import analyze_frames, get_key_frame_analysis_summary
+from utils.enhanced_visual_analysis import analyze_frames_enhanced, aggregate_enhanced_analysis
 from utils.multimodal_claude import (
     MultimodalClaudeClient,
     select_frames_for_api,
@@ -467,18 +468,29 @@ def extract_frames_task(self, video_id: str, metadata: Dict[str, Any]) -> Dict[s
         logger.info(f"Frame extraction completed in {extraction_time:.2f}s")
         logger.info(f"Extracted {len(frames_data)} total frames")
 
-        # Perform visual analysis on frames
-        logger.info(f"Performing visual analysis on frames...")
+        # Perform enhanced visual analysis on frames
+        logger.info(f"Performing enhanced visual analysis on frames...")
         frame_paths = [f["file_path"] for f in frames_data]
-        visual_analyses = analyze_frames(frame_paths)
 
-        # Combine frame data with visual analysis
+        # Use enhanced analysis for richer visual intelligence
+        enhanced_analyses = analyze_frames_enhanced(frame_paths)
+
+        # Combine frame data with enhanced visual analysis
         for i, frame_data in enumerate(frames_data):
-            if i < len(visual_analyses):
-                # Add visual analysis results to frame data
-                visual_result = visual_analyses[i]
-                frame_data["faces_detected"] = visual_result.get("faces_detected", 0)
-                frame_data["primary_face_confidence"] = visual_result.get("primary_face_confidence", Decimal("0.0"))
+            if i < len(enhanced_analyses):
+                # Add enhanced visual analysis results to frame data
+                enhanced_result = enhanced_analyses[i]
+                frame_data["faces_detected"] = enhanced_result.get("faces_detected", 0)
+                frame_data["primary_face_confidence"] = enhanced_result.get("primary_face_confidence", Decimal("0.0"))
+
+                # Store enhanced data for later use
+                frame_data["enhanced_visual"] = {
+                    "emotions": enhanced_result.get("emotions"),
+                    "eye_contact": enhanced_result.get("eye_contact"),
+                    "gestures": enhanced_result.get("gestures"),
+                    "posture": enhanced_result.get("posture"),
+                    "camera_framing": enhanced_result.get("camera_framing"),
+                }
 
         # Save frames to database
         frame_records = []
@@ -507,19 +519,26 @@ def extract_frames_task(self, video_id: str, metadata: Dict[str, Any]) -> Dict[s
         key_frames = [f for f in frames_data if f.get("is_key_frame", False)]
         key_frame_paths = [f["file_path"] for f in key_frames]
 
-        # Get visual analysis summary
-        summary = get_key_frame_analysis_summary(visual_analyses)
+        # Get enhanced visual analysis summary
+        enhanced_summary = aggregate_enhanced_analysis(enhanced_analyses)
 
-        logger.info(f"✅ Frame extraction and analysis complete:")
+        # Also get basic summary for backward compatibility
+        basic_summary = get_key_frame_analysis_summary(enhanced_analyses)
+
+        logger.info(f"✅ Frame extraction and enhanced analysis complete:")
         logger.info(f"   Total frames: {len(frames_data)}")
         logger.info(f"   Key frames: {len(key_frames)}")
-        logger.info(f"   Face detection rate: {summary.get('face_detection_rate', 0):.2%}")
+        logger.info(f"   Face detection rate: {basic_summary.get('face_detection_rate', 0):.2%}")
+        logger.info(f"   Avg eye contact: {enhanced_summary.get('avg_eye_contact_score', 0):.2f}")
+        logger.info(f"   Power pose ratio: {enhanced_summary.get('power_pose_ratio', 0):.2%}")
+        logger.info(f"   Dominant emotion: {enhanced_summary.get('emotion_breakdown', {})}")
 
         return {
             'frame_count': len(frames_data),
             'key_frame_count': len(key_frames),
             'key_frame_paths': key_frame_paths,
-            'visual_summary': summary,
+            'visual_summary': basic_summary,  # Basic metrics for backward compatibility
+            'enhanced_visual_summary': enhanced_summary,  # Enhanced metrics with emotions, gestures, etc.
         }
 
     except Exception as e:
@@ -620,11 +639,15 @@ def analyze_with_jake(self, video_id: str, transcript_data: Dict[str, Any], fram
 
             frame_timestamps = [float(f.timestamp_seconds) for f in key_frames]
 
+            # Get enhanced visual summary if available
+            enhanced_summary = frame_data.get('enhanced_visual_summary', {})
+
             user_prompt = build_multimodal_prompt(
                 transcript=transcript.full_text,
                 video_metadata=video_metadata,
                 frame_timestamps=frame_timestamps,
-                num_frames=len(key_frame_paths)
+                num_frames=len(key_frame_paths),
+                enhanced_visual_summary=enhanced_summary
             )
 
             # Make multimodal API call

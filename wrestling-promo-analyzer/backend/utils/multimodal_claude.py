@@ -363,7 +363,8 @@ def build_multimodal_prompt(
     transcript: str,
     video_metadata: Dict,
     frame_timestamps: List[float],
-    num_frames: int
+    num_frames: int,
+    enhanced_visual_summary: Optional[Dict] = None
 ) -> str:
     """
     Build enhanced prompt for multimodal analysis
@@ -373,12 +374,39 @@ def build_multimodal_prompt(
         video_metadata: Video metadata (title, duration, etc.)
         frame_timestamps: List of frame timestamps being sent
         num_frames: Number of frames included
+        enhanced_visual_summary: Optional enhanced visual analysis summary with emotions, gestures, etc.
 
     Returns:
         Formatted prompt string
     """
     # Format timestamps
     timestamp_list = ", ".join([f"{ts:.1f}s" for ts in frame_timestamps])
+
+    # Build enhanced visual context if available
+    visual_context = ""
+    if enhanced_visual_summary:
+        emotion_breakdown = enhanced_visual_summary.get("emotion_breakdown", {})
+        top_gestures = enhanced_visual_summary.get("top_gestures", [])
+        eye_contact = enhanced_visual_summary.get("avg_eye_contact_score", 0)
+        power_pose_ratio = enhanced_visual_summary.get("power_pose_ratio", 0)
+        shot_type = enhanced_visual_summary.get("dominant_shot_type", "unknown")
+        framing_quality = enhanced_visual_summary.get("avg_framing_quality", 0)
+
+        # Format emotion breakdown
+        if emotion_breakdown:
+            emotions_text = ", ".join([f"{k}: {v*100:.0f}%" for k, v in emotion_breakdown.items()])
+            visual_context += f"\n- Detected Emotions: {emotions_text}"
+
+        # Format gestures
+        if top_gestures:
+            gestures_text = ", ".join([f"{g['gesture']} ({g['count']}x)" for g in top_gestures[:3]])
+            visual_context += f"\n- Key Gestures: {gestures_text}"
+
+        # Add other metrics
+        visual_context += f"\n- Average Eye Contact Score: {eye_contact:.2f}/1.0"
+        visual_context += f"\n- Power Pose Ratio: {power_pose_ratio*100:.0f}%"
+        visual_context += f"\n- Dominant Shot Type: {shot_type}"
+        visual_context += f"\n- Camera Framing Quality: {framing_quality:.2f}/1.0"
 
     prompt = f"""Analyze this wrestling promo using BOTH the transcript AND the {num_frames} video frames provided.
 
@@ -397,6 +425,9 @@ I'm providing {num_frames} key frames from critical moments in the promo at thes
 {timestamp_list}
 
 Each frame is shown below in chronological order.
+
+**PRE-ANALYSIS VISUAL METRICS:**
+The frames have been pre-analyzed for visual features. Use these insights to inform your analysis:{visual_context if visual_context else ""}
 
 **YOUR TASK:**
 Analyze BOTH what the wrestler says (transcript) AND how they present themselves (visual frames).
