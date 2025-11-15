@@ -70,6 +70,9 @@ export async function uploadVideo(
   if (formData.promo_context) {
     form.append('promo_context', formData.promo_context);
   }
+  if (formData.judge_slug) {
+    form.append('judge_slug', formData.judge_slug);
+  }
 
   // Create XMLHttpRequest for upload progress tracking
   return new Promise((resolve, reject) => {

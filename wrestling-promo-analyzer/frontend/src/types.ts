@@ -318,6 +318,7 @@ export interface VideoUploadForm {
   promo_type?: string;
   character_type?: string;
   promo_context?: string;
+  judge_slug?: string;
 }
 
 // Processing status enum

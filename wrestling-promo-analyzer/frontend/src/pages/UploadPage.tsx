@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom'
 import { uploadVideo } from '../services/api'
 import { CHARACTER_TYPES, PROMO_TYPES, type VideoUploadForm } from '../types'
 import { ErrorDisplayCompact } from '../components/ErrorDisplay'
+import JudgeSelector from '../components/JudgeSelector'
 
 export default function UploadPage() {
   const navigate = useNavigate()
@@ -13,6 +14,7 @@ export default function UploadPage() {
   const [promoType, setPromoType] = useState('')
   const [characterType, setCharacterType] = useState('')
   const [promoContext, setPromoContext] = useState('')
+  const [selectedJudge, setSelectedJudge] = useState('jake-morrison')
 
   const [uploading, setUploading] = useState(false)
   const [uploadProgress, setUploadProgress] = useState(0)
@@ -87,6 +89,7 @@ export default function UploadPage() {
         promo_type: promoType || undefined,
         character_type: characterType || undefined,
         promo_context: promoContext || undefined,
+        judge_slug: selectedJudge,
       }
 
       const response = await uploadVideo(formData, (progress) => {
@@ -109,7 +112,7 @@ export default function UploadPage() {
           Upload Your Promo
         </h2>
         <p className="text-lg text-gray-600">
-          Get AI-powered feedback from Jake Morrison in under 2 minutes
+          Get AI-powered feedback from expert judges in under 2 minutes
         </p>
       </div>
 
@@ -244,11 +247,18 @@ export default function UploadPage() {
                 <textarea
                   value={promoContext}
                   onChange={(e) => setPromoContext(e.target.value)}
-                  placeholder="Any background info that helps Jake understand the promo..."
+                  placeholder="Any background info that helps the AI judge understand the promo..."
                   rows={4}
                   className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
                 />
               </div>
+
+              {/* Judge Selector */}
+              <JudgeSelector
+                selectedJudge={selectedJudge}
+                onSelectJudge={setSelectedJudge}
+                className="mt-6"
+              />
             </div>
           )}
 
