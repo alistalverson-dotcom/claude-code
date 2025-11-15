@@ -5,6 +5,8 @@ import type { VideoDetailResponse, AnalysisResponse } from '../types'
 import CategoryScoreBar from '../components/CategoryScoreBar'
 import TimestampedFeedbackList from '../components/TimestampedFeedbackList'
 import TranscriptView from '../components/TranscriptView'
+import ProcessingStatus from '../components/ProcessingStatus'
+import { SkeletonScore, SkeletonCard, SkeletonCategoryBar } from '../components/SkeletonLoader'
 
 export default function VideoDetailPage() {
   const { videoId } = useParams<{ videoId: string }>()
@@ -58,9 +60,26 @@ export default function VideoDetailPage() {
 
   if (loading) {
     return (
-      <div className="max-w-6xl mx-auto text-center py-12">
-        <div className="inline-block animate-spin rounded-full h-12 w-12 border-b-2 border-purple-600"></div>
-        <p className="mt-4 text-gray-600">Loading video...</p>
+      <div className="max-w-6xl mx-auto">
+        {/* Header Skeleton */}
+        <div className="mb-6 animate-pulse">
+          <div className="h-4 bg-gray-200 rounded w-32 mb-4"></div>
+          <div className="h-10 bg-gray-200 rounded w-3/4 mb-2"></div>
+          <div className="h-4 bg-gray-200 rounded w-1/2"></div>
+        </div>
+
+        {/* Content Skeletons */}
+        <div className="space-y-8">
+          <SkeletonScore />
+          <SkeletonCard />
+          <div className="bg-white rounded-lg shadow-lg p-8">
+            <div className="space-y-4">
+              <SkeletonCategoryBar />
+              <SkeletonCategoryBar />
+              <SkeletonCategoryBar />
+            </div>
+          </div>
+        </div>
       </div>
     )
   }
@@ -96,73 +115,10 @@ export default function VideoDetailPage() {
 
       {/* Processing Status */}
       {video.status !== 'completed' && (
-        <div className="bg-white rounded-lg shadow-lg p-8 mb-8">
-          <div className="text-center">
-            {video.status === 'uploaded' && (
-              <>
-                <div className="text-6xl mb-4">📤</div>
-                <h3 className="text-2xl font-bold text-gray-900 mb-2">
-                  Video Uploaded
-                </h3>
-                <p className="text-gray-600">
-                  Processing will begin shortly...
-                </p>
-              </>
-            )}
-
-            {video.status === 'processing' && (
-              <>
-                <div className="text-6xl mb-4 animate-pulse">⏳</div>
-                <h3 className="text-2xl font-bold text-gray-900 mb-2">
-                  Processing Your Promo
-                </h3>
-                <p className="text-gray-600 mb-6">
-                  Jake is analyzing your promo. This usually takes less than 2 minutes.
-                </p>
-
-                {/* Processing Steps */}
-                <div className="max-w-md mx-auto space-y-3">
-                  <div className="flex items-center space-x-3">
-                    <div className="flex-shrink-0 w-6 h-6 rounded-full bg-green-500 flex items-center justify-center text-white text-xs">
-                      ✓
-                    </div>
-                    <div className="flex-1 text-left">
-                      <p className="text-sm font-medium text-gray-900">Video uploaded</p>
-                    </div>
-                  </div>
-
-                  <div className="flex items-center space-x-3">
-                    <div className="flex-shrink-0 w-6 h-6 rounded-full bg-blue-500 flex items-center justify-center">
-                      <div className="w-2 h-2 rounded-full bg-white animate-ping"></div>
-                    </div>
-                    <div className="flex-1 text-left">
-                      <p className="text-sm font-medium text-gray-900">Extracting audio & transcribing</p>
-                    </div>
-                  </div>
-
-                  <div className="flex items-center space-x-3">
-                    <div className="flex-shrink-0 w-6 h-6 rounded-full border-2 border-gray-300"></div>
-                    <div className="flex-1 text-left">
-                      <p className="text-sm text-gray-600">Jake Morrison analysis</p>
-                    </div>
-                  </div>
-                </div>
-              </>
-            )}
-
-            {video.status === 'failed' && (
-              <>
-                <div className="text-6xl mb-4">❌</div>
-                <h3 className="text-2xl font-bold text-gray-900 mb-2">
-                  Processing Failed
-                </h3>
-                <p className="text-gray-600">
-                  Something went wrong. Please try uploading again.
-                </p>
-              </>
-            )}
-          </div>
-        </div>
+        <ProcessingStatus
+          videoStatus={video.status as 'uploaded' | 'processing' | 'failed'}
+          currentStep={2}
+        />
       )}
 
       {/* Analysis Results */}

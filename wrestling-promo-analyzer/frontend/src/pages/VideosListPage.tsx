@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react'
 import { Link } from 'react-router-dom'
 import { listVideos, formatDuration } from '../services/api'
 import type { VideoListItem } from '../types'
+import { SkeletonList } from '../components/SkeletonLoader'
 
 export default function VideosListPage() {
   const [videos, setVideos] = useState<VideoListItem[]>([])
@@ -86,12 +87,7 @@ export default function VideosListPage() {
       </div>
 
       {/* Loading State */}
-      {loading && (
-        <div className="text-center py-12">
-          <div className="inline-block animate-spin rounded-full h-12 w-12 border-b-2 border-purple-600"></div>
-          <p className="mt-4 text-gray-600">Loading videos...</p>
-        </div>
-      )}
+      {loading && <SkeletonList />}
 
       {/* Error State */}
       {error && (
