@@ -95,6 +95,7 @@ class Video(Base):
     transcript = relationship("Transcript", back_populates="video", uselist=False, cascade="all, delete-orphan")
     analyses = relationship("Analysis", back_populates="video", cascade="all, delete-orphan")
     processing_jobs = relationship("ProcessingJob", back_populates="video", cascade="all, delete-orphan")
+    frames = relationship("Frame", back_populates="video", cascade="all, delete-orphan")
 
     # Check constraint
     __table_args__ = (
@@ -237,6 +238,7 @@ class Analysis(Base):
     video = relationship("Video", back_populates="analyses")
     judge = relationship("Judge", back_populates="analyses")
     transcript = relationship("Transcript", back_populates="analyses")
+    visual_analysis = relationship("VisualAnalysis", back_populates="analysis", uselist=False, cascade="all, delete-orphan")
 
     # Constraints
     __table_args__ = (
@@ -298,3 +300,98 @@ class ProcessingJob(Base):
 
     def __repr__(self):
         return f"<ProcessingJob {self.job_type} ({self.status})>"
+
+
+# ============================================================================
+# FRAME MODEL (Multimodal)
+# ============================================================================
+
+class Frame(Base):
+    """Extracted video frame for visual analysis"""
+    __tablename__ = "frames"
+
+    id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
+    video_id = Column(UUID(as_uuid=True), ForeignKey("videos.id", ondelete="CASCADE"), nullable=False)
+
+    # Frame identification
+    frame_number = Column(Integer, nullable=False)
+    timestamp_seconds = Column(DECIMAL(10, 2), nullable=False, index=True)
+
+    # File information
+    file_path = Column(String(500), nullable=False)
+    file_size_bytes = Column(BigInteger)
+
+    # Frame dimensions
+    width = Column(Integer)
+    height = Column(Integer)
+
+    # Visual features (populated by analysis)
+    faces_detected = Column(Integer, default=0)
+    primary_face_confidence = Column(DECIMAL(5, 2))
+
+    # Frame selection scores
+    scene_change_score = Column(DECIMAL(5, 2))  # How different from previous frame
+    motion_level = Column(DECIMAL(5, 2))  # Amount of motion in frame
+    importance_score = Column(DECIMAL(5, 2))  # Overall importance for analysis
+
+    # Flags
+    is_key_frame = Column(Boolean, default=False)  # Selected for Claude analysis
+    sent_to_api = Column(Boolean, default=False)  # Sent to Claude Vision API
+
+    # Timestamps
+    created_at = Column(TIMESTAMP(timezone=True), server_default=func.now())
+
+    # Relationships
+    video = relationship("Video", back_populates="frames")
+
+    def __repr__(self):
+        return f"<Frame {self.video_id} @ {self.timestamp_seconds}s>"
+
+
+# ============================================================================
+# VISUAL ANALYSIS MODEL (Multimodal)
+# ============================================================================
+
+class VisualAnalysis(Base):
+    """Visual analysis results from multimodal Claude"""
+    __tablename__ = "visual_analyses"
+
+    id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
+    analysis_id = Column(UUID(as_uuid=True), ForeignKey("analyses.id", ondelete="CASCADE"), unique=True, nullable=False)
+
+    # Overall visual scores (0-100 scale)
+    facial_expression_score = Column(DECIMAL(5, 2))
+    body_language_score = Column(DECIMAL(5, 2))
+    visual_presence_score = Column(DECIMAL(5, 2))
+    production_quality_score = Column(DECIMAL(5, 2))
+
+    # Detailed analysis (JSON)
+    # Format: {"confident": 0.6, "intense": 0.3, "neutral": 0.1}
+    emotion_breakdown = Column(JSONB)
+
+    # Format: [{"timestamp": "00:15", "gesture": "pointing", "effectiveness": 0.8}, ...]
+    gesture_analysis = Column(JSONB)
+
+    # Format: [{"timestamp": "00:15", "comment": "...", "type": "positive", "visual_element": "eye_contact", "frame_id": "..."}, ...]
+    visual_feedback = Column(JSONB)
+
+    # Production quality details
+    # Format: {"lighting": 0.85, "framing": 0.90, "background": 0.80}
+    production_details = Column(JSONB)
+
+    # Timestamps
+    created_at = Column(TIMESTAMP(timezone=True), server_default=func.now())
+
+    # Relationships
+    analysis = relationship("Analysis", back_populates="visual_analysis")
+
+    # Constraints
+    __table_args__ = (
+        CheckConstraint("facial_expression_score >= 0 AND facial_expression_score <= 100", name="check_facial_expression_score"),
+        CheckConstraint("body_language_score >= 0 AND body_language_score <= 100", name="check_body_language_score"),
+        CheckConstraint("visual_presence_score >= 0 AND visual_presence_score <= 100", name="check_visual_presence_score"),
+        CheckConstraint("production_quality_score >= 0 AND production_quality_score <= 100", name="check_production_quality_score"),
+    )
+
+    def __repr__(self):
+        return f"<VisualAnalysis {self.analysis_id}>"
