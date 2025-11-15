@@ -142,7 +142,14 @@ class AnalysisResponse(BaseModel):
 
     # Metadata
     processing_time_seconds: Optional[Decimal] = None
-    token_count: Optional[int] = None
+
+    # Cost tracking
+    input_tokens: Optional[int] = None
+    output_tokens: Optional[int] = None
+    total_tokens: Optional[int] = None
+    estimated_cost_usd: Optional[Decimal] = None
+    model_version: Optional[str] = None
+
     created_at: datetime
 
     class Config:
@@ -265,7 +272,12 @@ def build_analysis_response(analysis) -> AnalysisResponse:
         timestamped_feedback=analysis.timestamped_feedback or [],
         specific_recommendations=analysis.specific_recommendations or [],
         processing_time_seconds=analysis.processing_time_seconds,
-        token_count=analysis.token_count,
+        # Cost tracking
+        input_tokens=analysis.input_tokens,
+        output_tokens=analysis.output_tokens,
+        total_tokens=analysis.total_tokens,
+        estimated_cost_usd=analysis.estimated_cost_usd,
+        model_version=analysis.model_version,
         created_at=analysis.created_at,
     )
 

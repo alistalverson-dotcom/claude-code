@@ -22,6 +22,7 @@ from anthropic import Anthropic
 from config import settings
 from database import SessionLocal
 from models import Video, Transcript, Analysis, ProcessingJob, Judge
+from utils.cost_tracking import calculate_cost
 
 # ============================================================================
 # CELERY APP CONFIGURATION
@@ -516,6 +517,15 @@ Format your response as JSON with this structure:
         analysis_time = time.time() - start_time
         logger.info(f"Claude API call completed in {analysis_time:.2f}s")
 
+        # Extract token usage and calculate cost
+        input_tokens = response.usage.input_tokens
+        output_tokens = response.usage.output_tokens
+        total_tokens = input_tokens + output_tokens
+        estimated_cost = calculate_cost(input_tokens, output_tokens, settings.ANTHROPIC_MODEL)
+
+        logger.info(f"Token usage: {input_tokens} in + {output_tokens} out = {total_tokens} total")
+        logger.info(f"Estimated cost: ${estimated_cost:.4f}")
+
         # Parse response
         response_text = response.content[0].text
 
@@ -573,7 +583,11 @@ Format your response as JSON with this structure:
             timestamped_feedback=analysis_result.get('timestamped_feedback', []),
             specific_recommendations=analysis_result.get('specific_recommendations', []),
             processing_time_seconds=Decimal(str(analysis_time)),
-            token_count=response.usage.input_tokens + response.usage.output_tokens,
+            # Cost tracking
+            input_tokens=input_tokens,
+            output_tokens=output_tokens,
+            total_tokens=total_tokens,
+            estimated_cost_usd=estimated_cost,
             model_version=settings.ANTHROPIC_MODEL,
         )
 
@@ -582,7 +596,7 @@ Format your response as JSON with this structure:
         db.refresh(analysis)
 
         logger.info(f"✅ Analysis complete: Overall Score = {analysis.overall_score} ({analysis.overall_grade})")
-        logger.info(f"   Token usage: {response.usage.input_tokens} in + {response.usage.output_tokens} out = {response.usage.input_tokens + response.usage.output_tokens} total")
+        logger.info(f"   Token usage: {input_tokens} in + {output_tokens} out = {total_tokens} total (${estimated_cost:.4f})")
 
         return {
             'analysis_id': str(analysis.id),

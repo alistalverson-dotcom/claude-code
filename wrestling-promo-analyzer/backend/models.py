@@ -222,8 +222,13 @@ class Analysis(Base):
 
     # Processing metadata
     processing_time_seconds = Column(DECIMAL(10, 2))
-    token_count = Column(Integer)
-    model_version = Column(String(50))
+
+    # Cost tracking
+    input_tokens = Column(Integer)  # Tokens sent to API
+    output_tokens = Column(Integer)  # Tokens received from API
+    total_tokens = Column(Integer)  # Total tokens (input + output)
+    estimated_cost_usd = Column(DECIMAL(10, 4))  # Estimated cost in USD
+    model_version = Column(String(50))  # Claude model used (e.g., "claude-3-5-sonnet-20241022")
 
     # Timestamps
     created_at = Column(TIMESTAMP(timezone=True), server_default=func.now(), index=True)

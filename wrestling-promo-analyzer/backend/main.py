@@ -508,6 +508,56 @@ async def get_judge(
 
 
 # ============================================================================
+# COST TRACKING & STATS
+# ============================================================================
+
+@app.get("/api/v1/stats/costs", tags=["Stats"])
+async def get_cost_statistics(
+    days: int = Query(30, description="Number of days to include in summary"),
+    db: Session = Depends(get_db),
+):
+    """
+    Get cost statistics for Claude API usage
+
+    Returns aggregated cost and token usage data for the specified time period.
+    Useful for monitoring API costs and usage patterns.
+    """
+    from datetime import datetime, timedelta
+    from utils.cost_tracking import get_cost_summary
+
+    start_date = datetime.utcnow() - timedelta(days=days)
+
+    try:
+        summary = get_cost_summary(db, start_date)
+        return summary
+    except Exception as e:
+        raise HTTPException(
+            status_code=500,
+            detail=f"Failed to generate cost summary: {str(e)}"
+        )
+
+
+@app.get("/api/v1/stats/pricing", tags=["Stats"])
+async def get_pricing_info(
+    model: Optional[str] = Query(None, description="Specific model to get pricing for"),
+):
+    """
+    Get current Claude API pricing information
+
+    Returns pricing per 1M tokens for different Claude models.
+    """
+    from utils.cost_tracking import get_model_pricing_info
+
+    try:
+        return get_model_pricing_info(model)
+    except Exception as e:
+        raise HTTPException(
+            status_code=500,
+            detail=f"Failed to retrieve pricing info: {str(e)}"
+        )
+
+
+# ============================================================================
 # ERROR HANDLERS
 # ============================================================================
 
