@@ -1,0 +1,162 @@
+/**
+ * TypeScript type definitions for Wrestling Promo Analyzer
+ * Matches backend Pydantic schemas
+ */
+
+export interface VideoUploadResponse {
+  video_id: string;
+  filename: string;
+  original_filename: string;
+  file_size_bytes: number;
+  status: string;
+  message: string;
+  created_at: string;
+}
+
+export interface VideoListItem {
+  video_id: string;
+  original_filename: string;
+  promo_title: string | null;
+  status: string;
+  duration_seconds: number | null;
+  created_at: string;
+}
+
+export interface TranscriptSegment {
+  start: number;
+  end: number;
+  text: string;
+}
+
+export interface TranscriptResponse {
+  id: string;
+  video_id: string;
+  full_text: string;
+  segments: TranscriptSegment[];
+  language: string;
+  word_count: number | null;
+  created_at: string;
+}
+
+export interface CategoryScores {
+  psychology: number;
+  character_work: number;
+  delivery: number;
+  story_structure: number;
+  crowd_connection: number;
+  originality: number;
+}
+
+export interface TimestampedFeedback {
+  timestamp: string;
+  comment: string;
+  type: 'positive' | 'negative' | 'neutral';
+}
+
+export interface AnalysisResponse {
+  analysis_id: string;
+  judge_name: string;
+  overall_score: number;
+  overall_grade: string | null;
+  category_scores: CategoryScores;
+  summary: string;
+  strengths: string[];
+  weaknesses: string[];
+  timestamped_feedback: TimestampedFeedback[];
+  specific_recommendations: string[];
+  processing_time_seconds: number | null;
+  token_count: number | null;
+  created_at: string;
+}
+
+export interface VideoDetailResponse {
+  video_id: string;
+  filename: string;
+  original_filename: string;
+  file_size_bytes: number;
+  mime_type: string;
+
+  // Metadata
+  duration_seconds: number | null;
+  width: number | null;
+  height: number | null;
+  codec: string | null;
+  fps: number | null;
+
+  // Status
+  status: string;
+
+  // Promo metadata
+  promo_title: string | null;
+  promo_type: string | null;
+  character_type: string | null;
+  promo_context: string | null;
+
+  // Timestamps
+  created_at: string;
+  processing_started_at: string | null;
+  processing_completed_at: string | null;
+
+  // Related data
+  transcript: TranscriptResponse | null;
+  analyses: AnalysisResponse[];
+}
+
+export interface JudgeResponse {
+  id: string;
+  name: string;
+  slug: string;
+  personality_type: string;
+  description: string;
+  evaluation_focus: string;
+  is_active: boolean;
+}
+
+export interface HealthCheckResponse {
+  status: string;
+  timestamp: string;
+  database: string;
+  redis: string;
+  celery: string;
+}
+
+export interface ErrorResponse {
+  detail: string;
+  error_code?: string;
+  timestamp: string;
+}
+
+// Helper type for upload form
+export interface VideoUploadForm {
+  file: File;
+  promo_title?: string;
+  promo_type?: string;
+  character_type?: string;
+  promo_context?: string;
+}
+
+// Processing status enum
+export enum ProcessingStatus {
+  UPLOADED = 'uploaded',
+  PROCESSING = 'processing',
+  COMPLETED = 'completed',
+  FAILED = 'failed',
+}
+
+// Character types
+export const CHARACTER_TYPES = [
+  { value: 'heel', label: 'Heel (Bad Guy)' },
+  { value: 'face', label: 'Face (Good Guy)' },
+  { value: 'tweener', label: 'Tweener (In Between)' },
+] as const;
+
+// Promo types
+export const PROMO_TYPES = [
+  { value: 'heel_promo', label: 'Heel Promo' },
+  { value: 'face_promo', label: 'Face Promo' },
+  { value: 'challenge', label: 'Challenge' },
+  { value: 'revenge', label: 'Revenge' },
+  { value: 'celebration', label: 'Celebration' },
+  { value: 'debut', label: 'Debut' },
+  { value: 'retirement', label: 'Retirement' },
+] as const;

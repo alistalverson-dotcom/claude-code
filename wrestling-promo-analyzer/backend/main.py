@@ -27,8 +27,8 @@ from schemas import (
 )
 from config import settings, validate_settings, print_settings
 
-# Import tasks (will be implemented next)
-# from tasks import process_video_pipeline
+# Import tasks
+from tasks import process_video_pipeline
 
 # ============================================================================
 # APPLICATION SETUP
@@ -248,9 +248,7 @@ async def upload_video(
         # ====================================================================
         # QUEUE PROCESSING PIPELINE (Celery)
         # ====================================================================
-        # Uncomment when tasks.py is ready:
-        # from tasks import process_video_pipeline
-        # process_video_pipeline.delay(video_id)
+        process_video_pipeline.delay(video_id)
 
         return VideoUploadResponse(
             video_id=str(video.id),
