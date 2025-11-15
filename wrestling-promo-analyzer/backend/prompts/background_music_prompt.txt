@@ -1,0 +1,153 @@
+BACKGROUND MUSIC ANALYSIS FOR WRESTLING PROMO
+
+You are analyzing the background music in a wrestling promo. Provide detailed evaluation of how the music enhances or detracts from the performance.
+
+AUDIO FEATURES DETECTED:
+- Music Present: {music_present}
+- Tempo: {bpm} BPM ({tempo_category})
+- Intensity: {intensity_level} ({intensity_score}/1.0)
+- Key: {key_type} (Emotional Tone: {emotional_tone})
+- Music/Speech Balance: {balance_quality}
+- Balance Ratio: {balance_ratio}
+- Ducking Detected: {ducking_detected}
+- Has Dynamic Builds: {has_builds}
+
+CHARACTER & PROMO CONTEXT:
+- Character Type: {character_type} (Heel/Face/Tweener)
+- Promo Type: {promo_type}
+
+ANALYZE THE FOLLOWING:
+
+1. MUSIC STYLE & CHARACTER ALIGNMENT:
+
+   For HEEL (Villain) Characters:
+   - Effective: Heavy/aggressive music, minor keys, dark tones, intense energy
+   - Tempo: Fast (120-150 BPM) or menacing slow (60-80 BPM)
+   - Avoid: Uplifting major keys, cheerful music, soft/gentle tones
+
+   For FACE (Hero) Characters:
+   - Effective: Uplifting/heroic music, major keys, energetic, motivational
+   - Tempo: Moderate to fast (110-140 BPM)
+   - Avoid: Dark/ominous tones, overly aggressive, minor key depressing music
+
+   For TWEENER (Anti-Hero) Characters:
+   - Effective: Edgy modern music, versatile energy, cinematic
+   - Tempo: Moderate (100-130 BPM)
+   - Avoid: Too cheerful (face-like) or too dark (heel-like)
+
+2. TEMPO APPROPRIATENESS:
+   - Is the tempo appropriate for the promo's energy and pacing?
+   - Does it match the intensity of the performance?
+   - For challenge promos: faster tempo builds excitement
+   - For intimidation: slower, heavier tempo creates menace
+   - For celebration: upbeat tempo enhances joy
+
+3. INTENSITY & MOOD MATCHING:
+   - Does the music intensity match the promo's emotional tone?
+   - Is the key (major/minor) appropriate for the character alignment?
+   - Do dynamic builds (if present) align with promo climax moments?
+   - Is the emotional tone (uplifting/dark/neutral) appropriate?
+
+4. MIXING QUALITY ASSESSMENT:
+   - Music Volume Level: Is it too loud, too quiet, or balanced?
+   - Speech Clarity: Can you hear dialogue clearly over music?
+   - Ducking: Does music appropriately lower during key speech moments?
+   - Balance Quality: {balance_quality} - is this appropriate?
+   - Audio Quality: Any distortion, clipping, or technical issues?
+
+5. EFFECTIVENESS EVALUATION:
+   - Does the music ENHANCE the promo or DISTRACT from the performer?
+   - Does it amplify emotional impact?
+   - Is the music choice memorable or generic?
+   - Does it help establish character identity?
+   - Would the promo be better without music, or is music essential?
+
+6. SPECIFIC OBSERVATIONS:
+   - What moments does the music work particularly well?
+   - What moments does it overpower or distract?
+   - Are there missed opportunities for music impact?
+   - Should music be present throughout or only in certain sections?
+
+PROVIDE YOUR ANALYSIS IN THIS JSON FORMAT:
+
+{
+  "music_effectiveness": {
+    "overall_score": 0-100,
+    "fits_character": true|false,
+    "fits_promo_type": true|false,
+    "enhances_performance": true|false,
+    "effectiveness_level": "excellent|good|fair|poor",
+    "summary": "Brief 1-2 sentence overall assessment"
+  },
+  "music_style_assessment": {
+    "style_description": "Describe the music style (e.g., 'Heavy industrial rock with dark synthesizers')",
+    "tempo_appropriateness": "excellent|good|fair|poor",
+    "tempo_feedback": "Specific feedback on tempo choice",
+    "intensity_match": "excellent|good|fair|poor",
+    "intensity_feedback": "Specific feedback on intensity level",
+    "mood_alignment": "excellent|good|fair|poor",
+    "mood_feedback": "Specific feedback on mood/key alignment",
+    "character_fit_feedback": "Detailed explanation of how music fits or doesn't fit character type"
+  },
+  "mixing_assessment": {
+    "volume_balance": "excellent|good|fair|poor",
+    "volume_feedback": "Specific feedback on volume levels",
+    "ducking_quality": "excellent|good|fair|poor|not_detected",
+    "ducking_feedback": "Feedback on music ducking during speech",
+    "overall_mix_quality": "professional|semi_professional|amateur|poor",
+    "mix_feedback": "Overall mixing quality assessment",
+    "technical_issues": ["List any clipping, distortion, or quality issues"],
+    "mixing_recommendations": ["Specific mixing improvements"]
+  },
+  "strengths": [
+    "List 2-4 specific things working well with the music",
+    "Be specific about moments or characteristics"
+  ],
+  "weaknesses": [
+    "List 1-3 specific areas for improvement",
+    "Be specific and constructive"
+  ],
+  "recommendations": [
+    "Actionable recommendation 1 (e.g., 'Lower music volume by 3dB at 00:45 during climax')",
+    "Actionable recommendation 2 (e.g., 'Add subtle fade-in at start instead of abrupt entry')",
+    "Actionable recommendation 3 (e.g., 'Consider adding music pause at 01:30 for dramatic effect')"
+  ],
+  "alternative_music_suggestions": [
+    "Suggest alternative music styles that would work well",
+    "Be specific (e.g., 'Consider aggressive trap beats for modern heel aesthetic')"
+  ],
+  "timestamped_observations": [
+    {
+      "timestamp": "00:15",
+      "observation": "Music perfectly builds during challenge delivery",
+      "type": "positive|negative|neutral"
+    }
+  ],
+  "overall_music_feedback": "2-3 sentence comprehensive summary of the music's impact on the promo. Address effectiveness, appropriateness, and key recommendations."
+}
+
+IMPORTANT GUIDELINES:
+
+✓ Be SPECIFIC in feedback (don't just say "good" - explain WHY and give examples with timestamps)
+✓ Consider the wrestling promo context (not a music video or movie)
+✓ Evaluate if music SERVES the performer or just exists as background
+✓ Be honest about character alignment (e.g., "uplifting music undermines heel menace")
+✓ Provide ACTIONABLE mixing recommendations with specific dB adjustments
+✓ Suggest alternatives that would work better for the character type
+✓ Note any moments where music timing is particularly effective or ineffective
+
+EXAMPLES OF GOOD FEEDBACK:
+
+✓ "The heavy industrial rock at 125 BPM perfectly amplifies the heel character's aggressive challenge. The minor key creates menacing atmosphere ideal for intimidation."
+✓ "Music volume at -8dB overpowers speech at -6dB during 00:45-01:00. Lower music to -12dB for clarity while maintaining impact."
+✓ "Excellent ducking detected - music drops 6dB during key dialogue at 01:15, ensuring every word hits with power."
+✓ "The uplifting major key music contradicts the heel character's dark persona. Consider switching to minor key industrial or dark trap for better alignment."
+
+EXAMPLES OF POOR FEEDBACK (AVOID):
+
+✗ "Music sounds good"
+✗ "Volume is okay"
+✗ "Could use different music"
+✗ "Professional quality"
+
+Now analyze the background music and provide detailed, actionable feedback using the format above.

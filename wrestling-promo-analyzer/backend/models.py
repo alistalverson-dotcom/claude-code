@@ -395,6 +395,21 @@ class VisualAnalysis(Base):
     # Production technique score (0-100)
     production_technique_score = Column(DECIMAL(5, 2))
 
+    # Background music analysis (NEW)
+    # Format: {
+    #   "music_detected": true,
+    #   "music_characteristics": {"tempo_bpm": 125, "intensity": "intense", "key_type": "minor", ...},
+    #   "mixing_quality": {"balance_quality": "excellent", "ducking_detected": true, ...},
+    #   "music_effectiveness": {"overall_score": 82, "fits_character": true, ...},
+    #   "strengths": ["Tempo matches intensity...", ...],
+    #   "weaknesses": ["Music too loud at 00:45...", ...],
+    #   "recommendations": ["Lower volume by 3dB...", ...]
+    # }
+    music_analysis = Column(JSONB)
+
+    # Music effectiveness score (0-100)
+    music_effectiveness_score = Column(DECIMAL(5, 2))
+
     # Timestamps
     created_at = Column(TIMESTAMP(timezone=True), server_default=func.now())
 
@@ -408,6 +423,7 @@ class VisualAnalysis(Base):
         CheckConstraint("visual_presence_score >= 0 AND visual_presence_score <= 100", name="check_visual_presence_score"),
         CheckConstraint("production_quality_score >= 0 AND production_quality_score <= 100", name="check_production_quality_score"),
         CheckConstraint("production_technique_score >= 0 AND production_technique_score <= 100", name="check_production_technique_score"),
+        CheckConstraint("music_effectiveness_score >= 0 AND music_effectiveness_score <= 100", name="check_music_effectiveness_score"),
     )
 
     def __repr__(self):

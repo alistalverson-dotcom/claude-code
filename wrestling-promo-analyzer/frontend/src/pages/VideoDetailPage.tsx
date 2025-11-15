@@ -16,6 +16,7 @@ import ProductionQualityCard from '../components/ProductionQualityCard'
 import EffectsSummaryCard from '../components/EffectsSummaryCard'
 import ColorGradingVisualization from '../components/ColorGradingVisualization'
 import EffectsBreakdownTable from '../components/EffectsBreakdownTable'
+import MusicAnalysisCard from '../components/MusicAnalysisCard'
 
 export default function VideoDetailPage() {
   const { videoId } = useParams<{ videoId: string }>()
@@ -291,6 +292,11 @@ export default function VideoDetailPage() {
                 />
               </div>
             </>
+          )}
+
+          {/* Background Music Analysis (NEW) */}
+          {analysis.visual_analysis?.music_analysis && (
+            <MusicAnalysisCard musicAnalysis={analysis.visual_analysis.music_analysis} />
           )}
 
           {/* Category Scores */}

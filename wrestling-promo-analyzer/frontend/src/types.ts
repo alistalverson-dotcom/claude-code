@@ -138,11 +138,87 @@ export interface EffectsAnalysis {
   recommendations?: string[];
 }
 
+// Background Music Analysis Types (NEW)
+export interface MusicCharacteristics {
+  tempo_bpm?: number;
+  tempo_category?: string;
+  intensity_level?: string;
+  intensity_score?: number;
+  key_type?: string;
+  emotional_tone?: string;
+  has_dynamic_builds?: boolean;
+}
+
+export interface MixingQuality {
+  music_level_db?: number;
+  speech_level_db?: number;
+  balance_ratio?: number;
+  balance_quality?: string;
+  ducking_detected?: boolean;
+  music_too_loud?: boolean;
+  music_too_quiet?: boolean;
+  clipping_detected?: boolean;
+}
+
+export interface MusicEffectiveness {
+  overall_score?: number;
+  fits_character?: boolean;
+  fits_promo_type?: boolean;
+  enhances_performance?: boolean;
+  effectiveness_level?: string;
+  summary?: string;
+}
+
+export interface MusicStyleAssessment {
+  style_description?: string;
+  tempo_appropriateness?: string;
+  tempo_feedback?: string;
+  intensity_match?: string;
+  intensity_feedback?: string;
+  mood_alignment?: string;
+  mood_feedback?: string;
+  character_fit_feedback?: string;
+}
+
+export interface MixingAssessment {
+  volume_balance?: string;
+  volume_feedback?: string;
+  ducking_quality?: string;
+  ducking_feedback?: string;
+  overall_mix_quality?: string;
+  mix_feedback?: string;
+  technical_issues?: string[];
+  mixing_recommendations?: string[];
+}
+
+export interface TimestampedMusicObservation {
+  timestamp: string;
+  observation: string;
+  type: 'positive' | 'negative' | 'neutral';
+}
+
+export interface MusicAnalysis {
+  music_detected?: boolean;
+  music_present_percentage?: number;
+  music_characteristics?: MusicCharacteristics;
+  mixing_quality?: MixingQuality;
+  music_effectiveness?: MusicEffectiveness;
+  music_style_assessment?: MusicStyleAssessment;
+  mixing_assessment?: MixingAssessment;
+  strengths?: string[];
+  weaknesses?: string[];
+  recommendations?: string[];
+  alternative_music_suggestions?: string[];
+  timestamped_observations?: TimestampedMusicObservation[];
+  overall_music_feedback?: string;
+}
+
 export interface VisualAnalysisData {
   emotion_breakdown?: EmotionBreakdown;
   top_gestures?: Gesture[];
   production_quality?: ProductionQuality;
-  effects_analysis?: EffectsAnalysis; // NEW
+  effects_analysis?: EffectsAnalysis;
+  music_analysis?: MusicAnalysis; // NEW
 }
 
 export interface VisualAnalysisResponse {
