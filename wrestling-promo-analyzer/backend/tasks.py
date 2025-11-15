@@ -44,9 +44,41 @@ app.conf.update(
     task_soft_time_limit=3000,  # 50 minutes soft limit
     task_acks_late=True,
     worker_prefetch_multiplier=1,
+    # Error handling defaults
+    task_reject_on_worker_lost=True,
+    task_acks_on_failure_or_timeout=True,
 )
 
 logger = get_task_logger(__name__)
+
+
+# ============================================================================
+# ERROR HANDLING CLASSES
+# ============================================================================
+
+class VideoProcessingError(Exception):
+    """Base exception for video processing errors"""
+    pass
+
+
+class VideoNotFoundError(VideoProcessingError):
+    """Video not found in database or filesystem"""
+    pass
+
+
+class FFmpegError(VideoProcessingError):
+    """FFmpeg processing error"""
+    pass
+
+
+class WhisperError(VideoProcessingError):
+    """Whisper transcription error"""
+    pass
+
+
+class ClaudeAPIError(VideoProcessingError):
+    """Claude API error"""
+    pass
 
 
 # ============================================================================
@@ -120,7 +152,14 @@ def update_processing_job(job_id: str, status: str, error_message: Optional[str]
 # TASK 1: EXTRACT METADATA
 # ============================================================================
 
-@app.task(bind=True, max_retries=3)
+@app.task(
+    bind=True,
+    max_retries=3,
+    autoretry_for=(FFmpegError,),
+    retry_backoff=True,
+    retry_backoff_max=600,
+    retry_jitter=True,
+)
 def extract_metadata(self, video_id: str) -> Dict[str, Any]:
     """
     Extract video metadata using ffprobe
@@ -130,6 +169,10 @@ def extract_metadata(self, video_id: str) -> Dict[str, Any]:
 
     Returns:
         Dict with metadata: duration, width, height, codec, fps, bitrate
+
+    Raises:
+        VideoNotFoundError: If video not found
+        FFmpegError: If ffprobe fails
     """
     logger.info(f"[TASK 1/4] Starting metadata extraction for video {video_id}")
 
@@ -138,16 +181,26 @@ def extract_metadata(self, video_id: str) -> Dict[str, Any]:
         # Get video from database
         video = db.query(Video).filter(Video.id == video_id).first()
         if not video:
-            raise ValueError(f"Video {video_id} not found in database")
+            error_msg = f"Video {video_id} not found in database"
+            logger.error(error_msg)
+            raise VideoNotFoundError(error_msg)
 
         file_path = Path(video.file_path)
         if not file_path.exists():
-            raise FileNotFoundError(f"Video file not found: {file_path}")
+            error_msg = f"Video file not found: {file_path}"
+            logger.error(error_msg)
+            raise VideoNotFoundError(error_msg)
 
         # Run ffprobe to get metadata
         logger.info(f"Running ffprobe on {file_path}")
 
-        probe = ffmpeg.probe(str(file_path))
+        try:
+            probe = ffmpeg.probe(str(file_path))
+        except ffmpeg.Error as e:
+            error_msg = f"FFprobe failed: {e.stderr.decode() if e.stderr else str(e)}"
+            logger.error(error_msg)
+            update_video_status(video_id, "failed", error_msg)
+            raise FFmpegError(error_msg)
 
         # Extract video stream info
         video_stream = next(
@@ -156,7 +209,10 @@ def extract_metadata(self, video_id: str) -> Dict[str, Any]:
         )
 
         if not video_stream:
-            raise ValueError("No video stream found in file")
+            error_msg = "No video stream found in file - file may be corrupt or invalid format"
+            logger.error(error_msg)
+            update_video_status(video_id, "failed", error_msg)
+            raise FFmpegError(error_msg)
 
         # Parse metadata
         metadata = {
