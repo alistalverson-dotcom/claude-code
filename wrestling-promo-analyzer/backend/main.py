@@ -26,6 +26,7 @@ from schemas import (
     build_video_detail_response,
 )
 from config import settings, validate_settings, print_settings
+from middleware.rate_limit import check_rate_limit
 
 # Import tasks
 from tasks import process_video_pipeline
@@ -146,7 +147,7 @@ async def root():
 # VIDEO UPLOAD ENDPOINT
 # ============================================================================
 
-@app.post("/api/v1/videos/upload", response_model=VideoUploadResponse, tags=["Videos"], status_code=201)
+@app.post("/api/v1/videos/upload", response_model=VideoUploadResponse, tags=["Videos"], status_code=201, dependencies=[Depends(check_rate_limit)])
 async def upload_video(
     file: UploadFile = File(..., description="Video file (MP4, MOV, AVI, MKV)"),
     promo_title: Optional[str] = Form(None, description="Optional title for the promo"),
