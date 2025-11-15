@@ -6,6 +6,7 @@ import CategoryScoreBar from '../components/CategoryScoreBar'
 import TimestampedFeedbackList from '../components/TimestampedFeedbackList'
 import TranscriptView from '../components/TranscriptView'
 import ProcessingStatus from '../components/ProcessingStatus'
+import VideoPlayer from '../components/VideoPlayer'
 import { SkeletonScore, SkeletonCard, SkeletonCategoryBar } from '../components/SkeletonLoader'
 
 export default function VideoDetailPage() {
@@ -112,6 +113,16 @@ export default function VideoDetailPage() {
         </h2>
         <p className="text-gray-600">{video.original_filename}</p>
       </div>
+
+      {/* Video Player */}
+      {video.status !== 'failed' && (
+        <div className="mb-8">
+          <VideoPlayer
+            videoUrl={`${import.meta.env.VITE_API_URL || 'http://localhost:8000'}/api/v1/videos/${video.video_id}/stream`}
+            title={video.promo_title || video.original_filename}
+          />
+        </div>
+      )}
 
       {/* Processing Status */}
       {video.status !== 'completed' && (

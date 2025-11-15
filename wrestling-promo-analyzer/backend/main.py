@@ -5,7 +5,7 @@ Main entry point with all API endpoints
 
 from fastapi import FastAPI, UploadFile, File, HTTPException, Depends, Form, Query
 from fastapi.middleware.cors import CORSMiddleware
-from fastapi.responses import JSONResponse
+from fastapi.responses import JSONResponse, FileResponse
 from sqlalchemy.orm import Session
 from typing import Optional, List
 import shutil
@@ -404,6 +404,43 @@ async def delete_video(
         )
 
     return None  # 204 No Content
+
+
+# ============================================================================
+# VIDEO STREAMING ENDPOINT
+# ============================================================================
+
+@app.get("/api/v1/videos/{video_id}/stream", tags=["Videos"])
+async def stream_video(
+    video_id: str,
+    db: Session = Depends(get_db),
+):
+    """
+    Stream video file for playback
+
+    Returns the video file for HTML5 video player.
+    Supports range requests for seeking.
+    """
+    try:
+        video_uuid = uuid.UUID(video_id)
+    except ValueError:
+        raise HTTPException(status_code=400, detail="Invalid video ID format")
+
+    video = db.query(Video).filter(Video.id == video_uuid).first()
+
+    if not video:
+        raise HTTPException(status_code=404, detail="Video not found")
+
+    file_path = Path(video.file_path)
+    if not file_path.exists():
+        raise HTTPException(status_code=404, detail="Video file not found")
+
+    # Return video file with appropriate headers
+    return FileResponse(
+        path=str(file_path),
+        media_type=video.mime_type or "video/mp4",
+        filename=video.original_filename,
+    )
 
 
 # ============================================================================
