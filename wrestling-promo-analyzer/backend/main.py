@@ -27,9 +27,25 @@ from schemas import (
 )
 from config import settings, validate_settings, print_settings
 from middleware.rate_limit import check_rate_limit
+from middleware.logging_middleware import APILoggingMiddleware
+from utils.logging_config import setup_logging, get_logger
 
 # Import tasks
 from tasks import process_video_pipeline
+
+# ============================================================================
+# LOGGING SETUP
+# ============================================================================
+
+# Setup logging before anything else
+setup_logging(
+    log_dir="logs",
+    log_level=settings.LOG_LEVEL if hasattr(settings, "LOG_LEVEL") else "INFO",
+    enable_console=True,
+    enable_file=True,
+)
+
+logger = get_logger(__name__)
 
 # ============================================================================
 # APPLICATION SETUP
@@ -40,6 +56,7 @@ try:
     validate_settings()
     print_settings()
 except ValueError as e:
+    logger.error(f"Configuration Error: {e}")
     print(f"❌ Configuration Error: {e}")
     print("Please check your .env file and try again.")
     # In production, you might want to exit here
@@ -65,6 +82,9 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
+# Add API logging middleware
+app.add_middleware(APILoggingMiddleware)
 
 # ============================================================================
 # STARTUP/SHUTDOWN EVENTS
