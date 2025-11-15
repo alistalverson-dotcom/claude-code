@@ -575,6 +575,7 @@ def analyze_with_jake(self, video_id: str, transcript_data: Dict[str, Any], fram
         # Get key frames for multimodal analysis
         key_frame_paths = []
         use_multimodal = False
+        images_sent = 0
 
         if frame_data and frame_data.get('key_frame_paths'):
             key_frame_paths = frame_data['key_frame_paths']
@@ -645,8 +646,13 @@ def analyze_with_jake(self, video_id: str, transcript_data: Dict[str, Any], fram
                 frame.sent_to_api = True
             db.commit()
 
+            logger.info(f"Multimodal API call completed in {time.time() - start_time:.2f}s")
+            logger.info(f"Token usage: {input_tokens} in + {output_tokens} out")
+            logger.info(f"Images sent: {images_sent}")
+
         else:
             # Fallback to text-only analysis (old method)
+            logger.info("Using text-only analysis (no frames available)")
             client = Anthropic(api_key=settings.ANTHROPIC_API_KEY)
 
             user_prompt = f"""Analyze this wrestling promo transcript:
@@ -695,34 +701,32 @@ Format your response as JSON with this structure:
 }}
 """
 
-        # Call Claude API
-        logger.info(f"Calling Claude API ({settings.ANTHROPIC_MODEL})...")
-        start_time = time.time()
+            # Call Claude API (text only)
+            response = client.messages.create(
+                model=settings.ANTHROPIC_MODEL,
+                max_tokens=settings.ANTHROPIC_MAX_TOKENS,
+                temperature=settings.ANTHROPIC_TEMPERATURE,
+                system=jake.system_prompt,
+                messages=[
+                    {"role": "user", "content": user_prompt}
+                ]
+            )
 
-        response = client.messages.create(
-            model=settings.ANTHROPIC_MODEL,
-            max_tokens=settings.ANTHROPIC_MAX_TOKENS,
-            temperature=settings.ANTHROPIC_TEMPERATURE,
-            system=jake.system_prompt,
-            messages=[
-                {"role": "user", "content": user_prompt}
-            ]
-        )
+            # Extract response
+            response_text = response.content[0].text
+            input_tokens = response.usage.input_tokens
+            output_tokens = response.usage.output_tokens
 
+        # Common processing for both multimodal and text-only paths
         analysis_time = time.time() - start_time
-        logger.info(f"Claude API call completed in {analysis_time:.2f}s")
-
-        # Extract token usage and calculate cost
-        input_tokens = response.usage.input_tokens
-        output_tokens = response.usage.output_tokens
         total_tokens = input_tokens + output_tokens
         estimated_cost = calculate_cost(input_tokens, output_tokens, settings.ANTHROPIC_MODEL)
 
+        logger.info(f"Claude API call completed in {analysis_time:.2f}s")
         logger.info(f"Token usage: {input_tokens} in + {output_tokens} out = {total_tokens} total")
         logger.info(f"Estimated cost: ${estimated_cost:.4f}")
 
         # Parse response
-        response_text = response.content[0].text
 
         # Extract JSON from response (handle potential markdown code blocks)
         if "```json" in response_text:
@@ -790,15 +794,47 @@ Format your response as JSON with this structure:
         db.commit()
         db.refresh(analysis)
 
+        # Save visual analysis if multimodal
+        if use_multimodal and 'visual_analysis' in analysis_result:
+            logger.info("Saving visual analysis results...")
+
+            visual_data = analysis_result['visual_analysis']
+
+            visual_analysis = VisualAnalysis(
+                analysis_id=analysis.id,
+                # Visual scores (extract from category_scores if present)
+                facial_expression_score=Decimal(str(analysis_result['category_scores'].get('facial_expressions', 0))),
+                body_language_score=Decimal(str(analysis_result['category_scores'].get('body_language', 0))),
+                visual_presence_score=Decimal(str(analysis_result['category_scores'].get('visual_presence', 0))),
+                production_quality_score=Decimal(str(visual_data.get('production_quality', {}).get('overall', 80))),
+                # Detailed analysis
+                emotion_breakdown=visual_data.get('emotion_breakdown', {}),
+                gesture_analysis=visual_data.get('top_gestures', []),
+                visual_feedback=analysis_result.get('timestamped_feedback', []),
+                production_details=visual_data.get('production_quality', {}),
+            )
+
+            db.add(visual_analysis)
+            db.commit()
+            db.refresh(visual_analysis)
+
+            logger.info(f"✅ Visual analysis saved")
+            logger.info(f"   Facial expressions: {visual_analysis.facial_expression_score}")
+            logger.info(f"   Body language: {visual_analysis.body_language_score}")
+            logger.info(f"   Visual presence: {visual_analysis.visual_presence_score}")
+
         logger.info(f"✅ Analysis complete: Overall Score = {analysis.overall_score} ({analysis.overall_grade})")
         logger.info(f"   Token usage: {input_tokens} in + {output_tokens} out = {total_tokens} total (${estimated_cost:.4f})")
+        if use_multimodal:
+            logger.info(f"   Multimodal analysis with {images_sent} frames")
 
         return {
             'analysis_id': str(analysis.id),
             'overall_score': float(analysis.overall_score),
             'overall_grade': analysis.overall_grade,
-            'token_count': analysis.token_count,
+            'total_tokens': total_tokens,
             'analysis_time': analysis_time,
+            'multimodal': use_multimodal,
         }
 
     except json.JSONDecodeError as e:
@@ -821,46 +857,56 @@ Format your response as JSON with this structure:
 @app.task(bind=True)
 def process_video_pipeline(self, video_id: str):
     """
-    Complete video processing pipeline
+    Complete multimodal video processing pipeline
 
-    Chains all 4 tasks together:
+    Chains all 5 tasks together:
     1. Extract metadata (ffprobe)
-    2. Extract audio (FFmpeg)
-    3. Transcribe (Whisper)
-    4. Analyze (Jake Morrison)
+    2. Extract frames (FFmpeg + visual analysis)
+    3. Extract audio (FFmpeg)
+    4. Transcribe (Whisper)
+    5. Analyze (Jake Morrison with multimodal Claude)
 
     Args:
         video_id: UUID of video to process
     """
     logger.info(f"=" * 80)
-    logger.info(f"🎬 STARTING PIPELINE FOR VIDEO {video_id}")
+    logger.info(f"🎬 STARTING MULTIMODAL PIPELINE FOR VIDEO {video_id}")
     logger.info(f"=" * 80)
 
     # Update video status to processing
     update_video_status(video_id, "processing")
 
     try:
-        # Chain all tasks together
-        # Each task receives output from previous task
-        pipeline = chain(
-            extract_metadata.s(video_id),
-            extract_audio.s(video_id),
-            transcribe_audio.s(video_id),
-            analyze_with_jake.s(video_id),
-        )
+        # Run metadata extraction first
+        metadata_task = extract_metadata.s(video_id)
+        metadata_result = metadata_task.apply_async()
+        metadata = metadata_result.get()
 
-        # Execute pipeline
-        result = pipeline.apply_async()
+        # Run frame extraction and audio extraction in parallel
+        # Both depend on metadata but are independent of each other
+        frames_task = extract_frames_task.s(video_id, metadata)
+        audio_task = extract_audio.s(video_id, metadata)
 
-        # Wait for completion (in production, you'd monitor this differently)
-        final_result = result.get()
+        # Execute in parallel
+        parallel_tasks = group(frames_task, audio_task)
+        parallel_result = parallel_tasks.apply_async()
+        frame_data, audio_data = parallel_result.get()
+
+        # Continue with transcription (depends on audio)
+        transcribe_task = transcribe_audio.s(video_id, audio_data)
+        transcript_data = transcribe_task.apply_async().get()
+
+        # Final analysis with both transcript and frames
+        analyze_task = analyze_with_jake.s(video_id, transcript_data, frame_data)
+        final_result = analyze_task.apply_async().get()
 
         # Update video status to completed
         update_video_status(video_id, "completed")
 
         logger.info(f"=" * 80)
-        logger.info(f"✅ PIPELINE COMPLETE FOR VIDEO {video_id}")
+        logger.info(f"✅ MULTIMODAL PIPELINE COMPLETE FOR VIDEO {video_id}")
         logger.info(f"   Final Score: {final_result['overall_score']} ({final_result['overall_grade']})")
+        logger.info(f"   Multimodal: {final_result.get('multimodal', False)}")
         logger.info(f"=" * 80)
 
         return final_result
