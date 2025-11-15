@@ -12,6 +12,11 @@ jake_system_prompt_path = Path(__file__).parent / "prompts" / "jake_morrison_sys
 with open(jake_system_prompt_path, "r") as f:
     jake_system_prompt = f.read()
 
+# Load Diana Sterling system prompt
+diana_system_prompt_path = Path(__file__).parent / "prompts" / "diana_sterling_system.md"
+with open(diana_system_prompt_path, "r") as f:
+    diana_system_prompt = f.read()
+
 
 def seed_judges():
     """Seed judges table with initial AI personalities"""
@@ -120,6 +125,128 @@ Format your response as JSON."""
         print(f"   Slug: {jake.slug}")
         print(f"   Personality: {jake.personality_type}")
         print(f"   Active: {jake.is_active}")
+
+        # =========================================================
+        # DIANA STERLING - Performance Psychologist
+        # =========================================================
+        print("\n" + "=" * 60)
+        print("SEEDING DR. DIANA STERLING")
+        print("=" * 60)
+
+        # Check if Diana Sterling already exists
+        existing_diana = db.query(Judge).filter(Judge.slug == "diana-sterling").first()
+        if existing_diana:
+            print("⚠️  Dr. Diana Sterling already exists in database")
+            print("   Updating existing record...")
+            diana = existing_diana
+        else:
+            print("Creating Dr. Diana Sterling...")
+            diana = Judge(slug="diana-sterling")
+            db.add(diana)
+
+        # Set/update Diana Sterling data
+        diana.name = "Dr. Diana Sterling"
+        diana.personality_type = "Performance Psychologist"
+
+        diana.description = """Dr. Diana Sterling is a performance psychologist with a PhD in Performance
+Psychology and 15 years of experience working with professional wrestlers, actors, and public speakers.
+She analyzes promos through the lens of psychological authenticity, emotional intelligence, and audience
+connection. Diana combines scientific rigor with empathetic understanding, helping performers understand
+the psychological mechanisms behind great performances."""
+
+        diana.evaluation_focus = """Dr. Sterling focuses on nine psychological categories: Emotional Authenticity
+(20%), Psychological Depth (15%), Non-Verbal Communication (15%), Audience Psychology (15%), Vocal Dynamics
+(10%), Cognitive Clarity (10%), Character Consistency (5%), Emotional Intelligence (5%), and Presence &
+Charisma (5%). She emphasizes authentic emotion and psychological congruence above technical perfection."""
+
+        diana.scoring_criteria = {
+            "emotional_authenticity": {
+                "weight": 20,
+                "description": "Genuine emotion vs. performed emotion",
+                "focus": ["authentic expression", "emotional vulnerability", "verbal/non-verbal consistency", "genuine passion"]
+            },
+            "psychological_depth": {
+                "weight": 15,
+                "description": "Real psychology behind the character",
+                "focus": ["internal motivations", "psychological complexity", "believable journey", "depth beyond surface"]
+            },
+            "non_verbal_communication": {
+                "weight": 15,
+                "description": "Body language and micro-expressions",
+                "focus": ["facial expressions", "authentic gestures", "posture psychology", "eye contact", "spatial awareness"]
+            },
+            "audience_psychology": {
+                "weight": 15,
+                "description": "Understanding how to influence audience minds",
+                "focus": ["psychological triggers", "social proof", "anticipation building", "emotional investment"]
+            },
+            "vocal_dynamics": {
+                "weight": 10,
+                "description": "Psychological effectiveness of voice use",
+                "focus": ["vocal variety", "strategic silence", "tone matching", "prosody", "paralinguistic cues"]
+            },
+            "cognitive_clarity": {
+                "weight": 10,
+                "description": "Message clarity and memorability",
+                "focus": ["message simplicity", "logical flow", "memorable hooks", "clear thesis", "no confusion"]
+            },
+            "character_consistency": {
+                "weight": 5,
+                "description": "Psychological consistency of character",
+                "focus": ["behavioral consistency", "psychological believability", "no breaking character", "natural evolution"]
+            },
+            "emotional_intelligence": {
+                "weight": 5,
+                "description": "Awareness of own and audience emotions",
+                "focus": ["self-awareness", "reading audience", "emotional regulation", "empathy", "emotional timing"]
+            },
+            "presence_charisma": {
+                "weight": 5,
+                "description": "Psychological attention command",
+                "focus": ["attention capture", "sustained focus", "natural magnetism", "confidence signals", "authority"]
+            }
+        }
+
+        diana.system_prompt = diana_system_prompt
+
+        diana.user_prompt_template = """Analyze this wrestling promo from a psychological perspective:
+
+**Promo Title:** {promo_title}
+**Character Type:** {character_type}
+**Promo Type:** {promo_type}
+**Context:** {promo_context}
+**Duration:** {duration} seconds
+**Word Count:** {word_count} words
+
+**TRANSCRIPT:**
+{transcript}
+
+---
+
+Provide a detailed psychological analysis with:
+1. Overall score (0-100) and grade
+2. Category scores for: emotional_authenticity, psychological_depth, non_verbal_communication,
+   audience_psychology, vocal_dynamics, cognitive_clarity, character_consistency,
+   emotional_intelligence, presence_charisma
+3. Psychological assessment (2-3 paragraphs analyzing the psychology)
+4. Psychological strengths (3-5 specific observations)
+5. Psychological areas for growth (3-5 specific observations)
+6. Timestamped psychological observations (reference specific moments with psychological insights)
+7. Psychological recommendations (3-5 actionable psychological techniques)
+
+Format your response as JSON."""
+
+        diana.is_active = True
+
+        db.commit()
+        db.refresh(diana)
+
+        print(f"✅ Dr. Diana Sterling seeded successfully")
+        print(f"   ID: {diana.id}")
+        print(f"   Name: {diana.name}")
+        print(f"   Slug: {diana.slug}")
+        print(f"   Personality: {diana.personality_type}")
+        print(f"   Active: {diana.is_active}")
 
         # Future judges (placeholders)
         print("\n📋 Future judges to implement:")

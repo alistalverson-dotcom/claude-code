@@ -174,6 +174,7 @@ async def upload_video(
     promo_type: Optional[str] = Form(None, description="Optional type (heel_promo, face_promo, etc.)"),
     character_type: Optional[str] = Form(None, description="Optional character type (heel, face, tweener)"),
     promo_context: Optional[str] = Form(None, description="Optional context notes"),
+    judge_slug: Optional[str] = Form("jake-morrison", description="Judge to use for analysis (jake-morrison, diana-sterling)"),
     db: Session = Depends(get_db),
 ):
     """
@@ -259,6 +260,7 @@ async def upload_video(
             promo_type=promo_type,
             character_type=character_type,
             promo_context=promo_context,
+            selected_judge_slug=judge_slug,
             status="uploaded",
         )
 

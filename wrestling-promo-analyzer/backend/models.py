@@ -83,6 +83,7 @@ class Video(Base):
     promo_type = Column(String(50), index=True)
     character_type = Column(String(50))
     promo_context = Column(Text)
+    selected_judge_slug = Column(String(50), default="jake-morrison")  # Which judge to use for analysis
 
     # Timestamps
     created_at = Column(TIMESTAMP(timezone=True), server_default=func.now(), index=True)

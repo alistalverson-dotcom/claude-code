@@ -581,19 +581,20 @@ def extract_frames_task(self, video_id: str, metadata: Dict[str, Any]) -> Dict[s
 # ============================================================================
 
 @app.task(bind=True, max_retries=3)
-def analyze_with_jake(self, video_id: str, transcript_data: Dict[str, Any], frame_data: Dict[str, Any] = None) -> Dict[str, Any]:
+def analyze_with_jake(self, video_id: str, transcript_data: Dict[str, Any], frame_data: Dict[str, Any] = None, judge_slug: str = "jake-morrison") -> Dict[str, Any]:
     """
-    Analyze promo using Jake Morrison AI judge with multimodal Claude Vision API
+    Analyze promo using AI judge with multimodal Claude Vision API
 
     Args:
         video_id: UUID of video to process
         transcript_data: Transcript text and metadata from previous task
         frame_data: Frame extraction data (optional for backward compatibility)
+        judge_slug: Slug of judge to use (default: jake-morrison)
 
     Returns:
         Dict with analysis_id and overall_score
     """
-    logger.info(f"[TASK 5/5] Starting Jake Morrison multimodal analysis for video {video_id}")
+    logger.info(f"[TASK 5/5] Starting AI judge analysis for video {video_id} (Judge: {judge_slug})")
 
     db = SessionLocal()
     try:
@@ -606,10 +607,12 @@ def analyze_with_jake(self, video_id: str, transcript_data: Dict[str, Any], fram
         if not transcript:
             raise ValueError(f"Transcript {transcript_data['transcript_id']} not found")
 
-        # Get Jake Morrison judge
-        jake = db.query(Judge).filter(Judge.slug == "jake-morrison").first()
-        if not jake:
-            raise ValueError("Jake Morrison judge not found in database")
+        # Get selected judge
+        judge = db.query(Judge).filter(Judge.slug == judge_slug).first()
+        if not judge:
+            raise ValueError(f"Judge '{judge_slug}' not found in database")
+
+        logger.info(f"Using judge: {judge.name} ({judge.personality_type})")
 
         # Get key frames for multimodal analysis
         key_frame_paths = []
@@ -672,7 +675,7 @@ def analyze_with_jake(self, video_id: str, transcript_data: Dict[str, Any], fram
 
             # Make multimodal API call
             response = multimodal_client.analyze_with_vision(
-                system_prompt=jake.system_prompt,
+                system_prompt=judge.system_prompt,
                 user_text=user_prompt,
                 frame_paths=key_frame_paths,
                 max_tokens=settings.ANTHROPIC_MAX_TOKENS,
@@ -749,7 +752,7 @@ Format your response as JSON with this structure:
                 model=settings.ANTHROPIC_MODEL,
                 max_tokens=settings.ANTHROPIC_MAX_TOKENS,
                 temperature=settings.ANTHROPIC_TEMPERATURE,
-                system=jake.system_prompt,
+                system=judge.system_prompt,
                 messages=[
                     {"role": "user", "content": user_prompt}
                 ]
@@ -809,7 +812,7 @@ Format your response as JSON with this structure:
         # Save analysis to database
         analysis = Analysis(
             video_id=video.id,
-            judge_id=jake.id,
+            judge_id=judge.id,
             transcript_id=transcript.id,
             overall_score=Decimal(str(analysis_result['overall_score'])),
             overall_grade=analysis_result['overall_grade'],
@@ -939,8 +942,16 @@ def process_video_pipeline(self, video_id: str):
         transcribe_task = transcribe_audio.s(video_id, audio_data)
         transcript_data = transcribe_task.apply_async().get()
 
-        # Final analysis with both transcript and frames
-        analyze_task = analyze_with_jake.s(video_id, transcript_data, frame_data)
+        # Get video to check selected judge
+        db = SessionLocal()
+        try:
+            video = db.query(Video).filter(Video.id == video_id).first()
+            judge_slug = video.selected_judge_slug if video else "jake-morrison"
+        finally:
+            db.close()
+
+        # Final analysis with both transcript and frames using selected judge
+        analyze_task = analyze_with_jake.s(video_id, transcript_data, frame_data, judge_slug)
         final_result = analyze_task.apply_async().get()
 
         # Update video status to completed
