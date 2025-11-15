@@ -577,6 +577,55 @@ def extract_frames_task(self, video_id: str, metadata: Dict[str, Any]) -> Dict[s
 
 
 # ============================================================================
+# HELPER: MAP JUDGE CATEGORIES TO DATABASE FIELDS
+# ============================================================================
+
+def map_judge_categories_to_db(category_scores: dict, judge_slug: str) -> dict:
+    """
+    Map judge-specific category names to standardized database field names.
+
+    Different judges use different category names, but we need to store them
+    in standardized database columns.
+
+    Args:
+        category_scores: Dict of category scores from judge's response
+        judge_slug: Slug of the judge (e.g., 'jake-morrison', 'diana-sterling')
+
+    Returns:
+        Dict with standardized keys matching database columns
+    """
+
+    if judge_slug == 'diana-sterling':
+        # Dr. Diana Sterling's categories → Database fields
+        # Map her psychological categories to closest standard equivalents
+        return {
+            'psychology': category_scores.get('psychological_depth', 0),
+            'character_work': category_scores.get('character_consistency', 0),
+            'delivery': category_scores.get('vocal_dynamics', 0),
+            'story_structure': category_scores.get('cognitive_clarity', 0),
+            'crowd_connection': category_scores.get('audience_psychology', 0),
+            'originality': category_scores.get('emotional_authenticity', 0),  # Authenticity as uniqueness
+            'facial_expressions': category_scores.get('emotional_authenticity', 0),
+            'body_language': category_scores.get('non_verbal_communication', 0),
+            'visual_presence': category_scores.get('presence_charisma', 0),
+        }
+    else:
+        # Jake Morrison and other judges using standard categories
+        # Return as-is (already using correct field names)
+        return {
+            'psychology': category_scores.get('psychology', 0),
+            'character_work': category_scores.get('character_work', 0),
+            'delivery': category_scores.get('delivery', 0),
+            'story_structure': category_scores.get('story_structure', 0),
+            'crowd_connection': category_scores.get('crowd_connection', 0),
+            'originality': category_scores.get('originality', 0),
+            'facial_expressions': category_scores.get('facial_expressions', 0),
+            'body_language': category_scores.get('body_language', 0),
+            'visual_presence': category_scores.get('visual_presence', 0),
+        }
+
+
+# ============================================================================
 # TASK 4: ANALYZE WITH JAKE MORRISON (Multimodal)
 # ============================================================================
 
@@ -809,6 +858,13 @@ Format your response as JSON with this structure:
                 grade = 'D'
             analysis_result['overall_grade'] = grade
 
+        # Map judge-specific categories to database fields
+        mapped_scores = map_judge_categories_to_db(analysis_result['category_scores'], judge_slug)
+
+        logger.info(f"Mapped category scores for {judge.name}:")
+        logger.info(f"  Original categories: {list(analysis_result['category_scores'].keys())}")
+        logger.info(f"  Mapped to DB fields: {list(mapped_scores.keys())}")
+
         # Save analysis to database
         analysis = Analysis(
             video_id=video.id,
@@ -816,12 +872,12 @@ Format your response as JSON with this structure:
             transcript_id=transcript.id,
             overall_score=Decimal(str(analysis_result['overall_score'])),
             overall_grade=analysis_result['overall_grade'],
-            psychology_score=Decimal(str(analysis_result['category_scores']['psychology'])),
-            character_score=Decimal(str(analysis_result['category_scores']['character_work'])),
-            delivery_score=Decimal(str(analysis_result['category_scores']['delivery'])),
-            structure_score=Decimal(str(analysis_result['category_scores']['story_structure'])),
-            crowd_connection_score=Decimal(str(analysis_result['category_scores']['crowd_connection'])),
-            originality_score=Decimal(str(analysis_result['category_scores']['originality'])),
+            psychology_score=Decimal(str(mapped_scores['psychology'])),
+            character_score=Decimal(str(mapped_scores['character_work'])),
+            delivery_score=Decimal(str(mapped_scores['delivery'])),
+            structure_score=Decimal(str(mapped_scores['story_structure'])),
+            crowd_connection_score=Decimal(str(mapped_scores['crowd_connection'])),
+            originality_score=Decimal(str(mapped_scores['originality'])),
             summary=analysis_result['summary'],
             strengths=analysis_result['strengths'],
             weaknesses=analysis_result['weaknesses'],
@@ -848,10 +904,10 @@ Format your response as JSON with this structure:
 
             visual_analysis = VisualAnalysis(
                 analysis_id=analysis.id,
-                # Visual scores (extract from category_scores if present)
-                facial_expression_score=Decimal(str(analysis_result['category_scores'].get('facial_expressions', 0))),
-                body_language_score=Decimal(str(analysis_result['category_scores'].get('body_language', 0))),
-                visual_presence_score=Decimal(str(analysis_result['category_scores'].get('visual_presence', 0))),
+                # Visual scores (use mapped scores)
+                facial_expression_score=Decimal(str(mapped_scores.get('facial_expressions', 0))),
+                body_language_score=Decimal(str(mapped_scores.get('body_language', 0))),
+                visual_presence_score=Decimal(str(mapped_scores.get('visual_presence', 0))),
                 production_quality_score=Decimal(str(visual_data.get('production_quality', {}).get('overall', 80))),
                 # Detailed analysis
                 emotion_breakdown=visual_data.get('emotion_breakdown', {}),

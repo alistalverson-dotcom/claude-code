@@ -115,6 +115,14 @@ export async function uploadVideo(
 }
 
 /**
+ * Get all active judges
+ */
+export async function getJudges(): Promise<JudgeResponse[]> {
+  const response = await fetch(`${API_BASE_URL}/api/v1/judges`);
+  return handleResponse<JudgeResponse[]>(response);
+}
+
+/**
  * Get video details by ID
  */
 export async function getVideo(videoId: string): Promise<VideoDetailResponse> {

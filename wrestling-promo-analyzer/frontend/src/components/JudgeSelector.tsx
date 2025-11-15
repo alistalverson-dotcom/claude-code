@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import type { JudgeResponse } from '../types';
+import { getJudges } from '../services/api';
 
 interface JudgeSelectorProps {
   selectedJudge: string;
@@ -19,11 +20,7 @@ export default function JudgeSelector({ selectedJudge, onSelectJudge, className 
 
   const fetchJudges = async () => {
     try {
-      const response = await fetch('/api/v1/judges');
-      if (!response.ok) {
-        throw new Error('Failed to fetch judges');
-      }
-      const data = await response.json();
+      const data = await getJudges();
       setJudges(data.filter((j: JudgeResponse) => j.is_active));
       setLoading(false);
     } catch (err) {
