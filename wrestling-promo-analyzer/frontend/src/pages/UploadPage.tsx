@@ -313,7 +313,7 @@ export default function UploadPage() {
           <div className="text-3xl mb-3">🎯</div>
           <h4 className="font-semibold text-gray-900 mb-2">Detailed Feedback</h4>
           <p className="text-sm text-gray-600">
-            6 category scores with timestamped comments
+            9 category scores with multimodal visual analysis
           </p>
         </div>
 

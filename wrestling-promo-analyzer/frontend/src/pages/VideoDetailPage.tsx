@@ -13,6 +13,9 @@ import VisualPerformanceMetrics from '../components/VisualPerformanceMetrics'
 import EmotionBreakdownChart from '../components/EmotionBreakdownChart'
 import GestureAnalysisCard from '../components/GestureAnalysisCard'
 import ProductionQualityCard from '../components/ProductionQualityCard'
+import EffectsSummaryCard from '../components/EffectsSummaryCard'
+import ColorGradingVisualization from '../components/ColorGradingVisualization'
+import EffectsBreakdownTable from '../components/EffectsBreakdownTable'
 
 export default function VideoDetailPage() {
   const { videoId } = useParams<{ videoId: string }>()
@@ -227,6 +230,67 @@ export default function VideoDetailPage() {
                 </div>
               )}
             </div>
+          )}
+
+          {/* Visual Effects & Production Techniques (NEW) */}
+          {analysis.visual_analysis?.effects_analysis && (
+            <>
+              {/* Effects Summary Card */}
+              <EffectsSummaryCard effectsAnalysis={analysis.visual_analysis.effects_analysis} />
+
+              {/* Detailed Effects Analysis */}
+              <div className="bg-white rounded-lg shadow-lg p-8 mb-8">
+                <h3 className="text-2xl font-bold text-gray-900 mb-6 flex items-center">
+                  <span className="mr-3">🎨</span>
+                  Visual Effects Details
+                </h3>
+
+                <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
+                  {/* Color Grading */}
+                  {analysis.visual_analysis.effects_analysis.color_grading && (
+                    <ColorGradingVisualization
+                      colorGrading={analysis.visual_analysis.effects_analysis.color_grading}
+                    />
+                  )}
+
+                  {/* Placeholder for additional visualizations if needed */}
+                  {analysis.visual_analysis.effects_analysis.camera_work && (
+                    <div className="bg-white rounded-lg shadow-md p-6">
+                      <h4 className="text-lg font-semibold text-gray-900 mb-4 flex items-center">
+                        <span className="mr-2">🎥</span>
+                        Camera Work
+                      </h4>
+                      <div className="space-y-3">
+                        <div className="flex justify-between items-center p-3 bg-gray-50 rounded-lg">
+                          <span className="text-sm text-gray-600">Stability</span>
+                          <span className="text-sm font-semibold text-gray-900">
+                            {analysis.visual_analysis.effects_analysis.camera_work.stability?.split('_').map(w => w.charAt(0).toUpperCase() + w.slice(1)).join(' ')}
+                          </span>
+                        </div>
+                        <div className="flex justify-between items-center p-3 bg-gray-50 rounded-lg">
+                          <span className="text-sm text-gray-600">Style</span>
+                          <span className="text-sm font-semibold text-gray-900">
+                            {analysis.visual_analysis.effects_analysis.camera_work.style?.split('_').map(w => w.charAt(0).toUpperCase() + w.slice(1)).join(' ')}
+                          </span>
+                        </div>
+                        {analysis.visual_analysis.effects_analysis.camera_work.feedback && (
+                          <div className="mt-4 p-3 bg-green-50 rounded-lg border-l-4 border-green-500">
+                            <p className="text-sm text-green-800">{analysis.visual_analysis.effects_analysis.camera_work.feedback}</p>
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                  )}
+                </div>
+
+                {/* Effects Breakdown Table */}
+                <EffectsBreakdownTable
+                  visualFilters={analysis.visual_analysis.effects_analysis.filters}
+                  visualEffects={analysis.visual_analysis.effects_analysis.visual_effects}
+                  cameraWork={analysis.visual_analysis.effects_analysis.camera_work}
+                />
+              </div>
+            </>
           )}
 
           {/* Category Scores */}

@@ -379,6 +379,22 @@ class VisualAnalysis(Base):
     # Format: {"lighting": 0.85, "framing": 0.90, "background": 0.80}
     production_details = Column(JSONB)
 
+    # Visual effects and filters analysis (NEW)
+    # Format: {
+    #   "color_grading": {"style": "teal_orange", "saturation": 0.75, ...},
+    #   "filters": {"film_grain": true, "intensity": 0.35, ...},
+    #   "motion_effects": {"camera_shake": 0.2, "handheld_style": true, ...},
+    #   "overlays": {"text_detected": true, "graphics_present": false, ...},
+    #   "production_technique_score": 78,
+    #   "effects_summary": "Cinematic teal/orange grading...",
+    #   "effectiveness_feedback": "The color grading creates...",
+    #   "recommendations": ["Reduce glitch effects...", ...]
+    # }
+    effects_analysis = Column(JSONB)
+
+    # Production technique score (0-100)
+    production_technique_score = Column(DECIMAL(5, 2))
+
     # Timestamps
     created_at = Column(TIMESTAMP(timezone=True), server_default=func.now())
 
@@ -391,6 +407,7 @@ class VisualAnalysis(Base):
         CheckConstraint("body_language_score >= 0 AND body_language_score <= 100", name="check_body_language_score"),
         CheckConstraint("visual_presence_score >= 0 AND visual_presence_score <= 100", name="check_visual_presence_score"),
         CheckConstraint("production_quality_score >= 0 AND production_quality_score <= 100", name="check_production_quality_score"),
+        CheckConstraint("production_technique_score >= 0 AND production_technique_score <= 100", name="check_production_technique_score"),
     )
 
     def __repr__(self):

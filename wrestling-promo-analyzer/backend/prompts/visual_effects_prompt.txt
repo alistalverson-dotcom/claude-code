@@ -1,0 +1,146 @@
+VISUAL EFFECTS & PRODUCTION TECHNIQUE ANALYSIS
+
+You are analyzing a wrestling promo video for production techniques, visual effects, and color grading. Provide detailed analysis of how these techniques enhance or detract from the performance.
+
+ANALYZE THE FOLLOWING FRAME FOR:
+
+1. COLOR GRADING & FILTERS:
+   - Is this in color, black & white, sepia, or color-graded?
+   - What color palette is used (teal/orange, warm, cool, natural, desaturated)?
+   - Is there a vignette effect (darkened edges)?
+   - How is the contrast and saturation?
+   - Does the color grading fit the character type and promo tone?
+
+2. VISUAL FILTERS:
+   - Film grain or noise texture present?
+   - Any lens blur or soft focus?
+   - Chromatic aberration (color fringing)?
+   - Overall sharpness and clarity
+
+3. PRODUCTION QUALITY:
+   - Lighting quality (professional studio vs natural vs poor)
+   - Camera framing and composition
+   - Background quality and distractions
+   - Overall technical execution
+
+4. VISUAL EFFECTS DETECTED:
+   - Text overlays or graphics (if yes, describe placement and quality)
+   - Glitch effects or digital distortion
+   - Motion blur or speed effects
+   - Light leaks or lens flares
+   - Any compositing or green screen work
+   - Split screen or picture-in-picture
+
+5. CAMERA WORK:
+   - Stable/tripod or handheld/shaky?
+   - Camera movement (static, panning, tracking)?
+   - Professional cinematography or amateur feel?
+
+6. EFFECTIVENESS ASSESSMENT:
+For EACH effect/technique identified, evaluate:
+   - Does it ENHANCE the promo or DISTRACT from the performer?
+   - Is it appropriate for the character type (heel/face/tweener)?
+   - Is the effect professionally executed or amateurish?
+   - Is it overused, well-balanced, or underutilized?
+
+7. CHARACTER-SPECIFIC APPROPRIATENESS:
+   - For HEEL characters: Dark/desaturated grading, high contrast, gritty effects are effective
+   - For FACE characters: Vibrant colors, clean production, minimal distortion are effective
+   - For TWEENER characters: Balanced approach, cinematic but not extreme
+
+8. PRODUCTION RECOMMENDATIONS:
+   - What effects are working well? (Be specific)
+   - What effects should be reduced or removed? (Be specific)
+   - What effects could be added to enhance the promo?
+   - Overall production technique rating
+
+PROVIDE YOUR ANALYSIS IN THIS FORMAT:
+
+{
+  "color_grading": {
+    "style": "color_graded|black_white|sepia|natural|desaturated",
+    "color_palette": "teal_orange|warm|cool|neutral|vivid",
+    "vignette_present": true|false,
+    "saturation_assessment": "high|medium|low",
+    "contrast_assessment": "high|medium|low",
+    "effectiveness": "excellent|good|fair|poor",
+    "feedback": "Specific comment on color grading..."
+  },
+  "visual_filters": {
+    "film_grain": true|false,
+    "film_grain_intensity": "heavy|moderate|light|none",
+    "blur_present": true|false,
+    "chromatic_aberration": true|false,
+    "overall_sharpness": "very_sharp|sharp|moderate|soft|very_soft",
+    "effectiveness": "excellent|good|fair|poor",
+    "feedback": "Specific comment on filters..."
+  },
+  "visual_effects": {
+    "text_overlays": {
+      "present": true|false,
+      "placement": "top|middle|bottom|corner",
+      "quality": "professional|amateur",
+      "blocks_face": true|false,
+      "effectiveness": "excellent|good|fair|poor"
+    },
+    "glitch_effects": true|false,
+    "light_leaks": true|false,
+    "compositing": true|false,
+    "other_effects": ["list any other effects"],
+    "overall_effectiveness": "excellent|good|fair|poor",
+    "feedback": "Specific comment on effects..."
+  },
+  "camera_work": {
+    "stability": "very_stable|stable|moderate_shake|shaky|very_shaky",
+    "style": "professional_tripod|handheld_professional|handheld_amateur|static",
+    "framing_quality": "excellent|good|fair|poor",
+    "effectiveness": "excellent|good|fair|poor",
+    "feedback": "Specific comment on camera work..."
+  },
+  "production_quality": {
+    "lighting": "excellent|good|fair|poor",
+    "overall_technical_quality": "excellent|good|fair|poor",
+    "professional_level": "broadcast_quality|professional|semi_professional|amateur",
+    "feedback": "Overall production quality assessment..."
+  },
+  "appropriateness_for_character": {
+    "fits_character_type": true|false,
+    "fits_promo_tone": true|false,
+    "enhancement_vs_distraction": "strongly_enhances|enhances|neutral|distracts|strongly_distracts",
+    "feedback": "How well do the effects fit the character and promo?..."
+  },
+  "effects_working_well": [
+    "List specific effects/techniques that enhance the promo"
+  ],
+  "effects_to_reduce": [
+    "List specific effects/techniques that should be reduced or removed"
+  ],
+  "effects_to_add": [
+    "List specific effects/techniques that could improve the promo"
+  ],
+  "production_technique_score": 0-100,
+  "overall_effects_summary": "2-3 sentence summary of the production techniques and their effectiveness..."
+}
+
+IMPORTANT GUIDELINES:
+- Be SPECIFIC in your feedback (don't just say "good" - explain WHY)
+- Consider the wrestling promo context (not a movie or commercial)
+- Evaluate if effects serve the storytelling or are just "showing off"
+- Consider character alignment (heel vs face)
+- Note any technical issues (blocking face, poor timing, etc.)
+- Recommend ACTIONABLE improvements
+- Score production technique on execution quality AND appropriateness
+
+EXAMPLES OF GOOD FEEDBACK:
+✓ "The teal/orange color grading creates a cinematic, intense atmosphere perfect for this heel character's intimidating promo"
+✓ "Film grain adds a gritty texture that reinforces the 'street fighter' character, but the intensity is slightly too heavy at 60% - reduce to 40% for better balance"
+✓ "Text overlay 'THE CHAMPION' is well-positioned in lower third and doesn't block the performer's face, professional execution"
+✓ "Glitch effects appear 8 times in 3 minutes - this is excessive and becomes distracting. Limit to 2-3 instances at key moments only"
+
+EXAMPLES OF POOR FEEDBACK (AVOID):
+✗ "The colors look good"
+✗ "Effects are okay"
+✗ "Could use more effects"
+✗ "Professional quality"
+
+Now analyze the provided frame(s) and provide detailed, actionable feedback on the visual effects and production techniques.

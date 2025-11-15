@@ -76,10 +76,73 @@ export interface ProductionQuality {
   overall?: number;
 }
 
+// Visual Effects Analysis Types (NEW)
+export interface ColorGradingAnalysis {
+  style?: string;
+  color_palette?: string;
+  color_temperature?: string;
+  dominant_colors?: string[];
+  saturation_level?: number;
+  contrast_ratio?: number;
+  vignette_detected?: boolean;
+  vignette_strength?: number;
+  effectiveness?: string;
+  feedback?: string;
+}
+
+export interface VisualFiltersAnalysis {
+  film_grain?: boolean;
+  film_grain_intensity?: string;
+  blur_present?: boolean;
+  chromatic_aberration?: boolean;
+  overall_sharpness?: string;
+  effectiveness?: string;
+  feedback?: string;
+}
+
+export interface VisualEffectsAnalysis {
+  text_overlays?: {
+    present?: boolean;
+    placement?: string;
+    quality?: string;
+    blocks_face?: boolean;
+    effectiveness?: string;
+  };
+  glitch_effects?: boolean;
+  light_leaks?: boolean;
+  compositing?: boolean;
+  other_effects?: string[];
+  overall_effectiveness?: string;
+  feedback?: string;
+}
+
+export interface CameraWorkAnalysis {
+  stability?: string;
+  style?: string;
+  framing_quality?: string;
+  effectiveness?: string;
+  feedback?: string;
+}
+
+export interface EffectsAnalysis {
+  color_grading?: ColorGradingAnalysis;
+  filters?: VisualFiltersAnalysis;
+  visual_effects?: VisualEffectsAnalysis;
+  camera_work?: CameraWorkAnalysis;
+  production_technique_score?: number;
+  effects_summary?: string;
+  effectiveness_feedback?: string;
+  effects_working_well?: string[];
+  effects_to_reduce?: string[];
+  effects_to_add?: string[];
+  recommendations?: string[];
+}
+
 export interface VisualAnalysisData {
   emotion_breakdown?: EmotionBreakdown;
   top_gestures?: Gesture[];
   production_quality?: ProductionQuality;
+  effects_analysis?: EffectsAnalysis; // NEW
 }
 
 export interface VisualAnalysisResponse {
