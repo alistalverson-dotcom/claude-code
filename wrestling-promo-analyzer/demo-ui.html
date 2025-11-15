@@ -1,0 +1,574 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Wrestling Promo Analyzer - Demo</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        @keyframes slideIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .animate-slide-in {
+            animation: slideIn 0.5s ease-out forwards;
+        }
+        @keyframes fillBar {
+            from { width: 0; }
+            to { width: var(--target-width); }
+        }
+        .progress-bar {
+            animation: fillBar 1s ease-out forwards;
+        }
+    </style>
+</head>
+<body class="bg-gray-100 min-h-screen">
+    <div class="max-w-6xl mx-auto p-6">
+        <!-- Header -->
+        <div class="mb-6 animate-slide-in">
+            <a href="#" class="text-purple-600 hover:text-purple-700 font-medium mb-4 inline-block">
+                ← Back to videos
+            </a>
+            <h2 class="text-4xl font-bold text-gray-900 mb-2">
+                CM Punk Pipe Bomb Promo
+            </h2>
+            <p class="text-gray-600">cm_punk_pipebomb.mp4</p>
+        </div>
+
+        <!-- Overall Score Card -->
+        <div class="bg-gradient-to-r from-purple-600 to-indigo-600 rounded-lg shadow-lg p-8 text-white mb-8 animate-slide-in" style="animation-delay: 0.1s">
+            <div class="flex items-center justify-between">
+                <div>
+                    <h3 class="text-xl font-semibold mb-2 opacity-90">
+                        Jake Morrison's Verdict
+                    </h3>
+                    <p class="text-5xl font-bold">88/100</p>
+                    <p class="text-2xl font-semibold mt-2 opacity-90">
+                        Grade: A
+                    </p>
+                </div>
+                <div class="text-7xl">🎭</div>
+            </div>
+        </div>
+
+        <!-- Summary -->
+        <div class="bg-white rounded-lg shadow-lg p-8 mb-8 animate-slide-in" style="animation-delay: 0.2s">
+            <h3 class="text-2xl font-bold text-gray-900 mb-4">Summary</h3>
+            <div class="prose prose-lg max-w-none text-gray-700">
+                <p>This promo demonstrates exceptional mastery of psychology and character work, with CM Punk delivering a career-defining performance that blurs the line between reality and kayfabe. The raw emotion and authenticity shine through both verbally and visually.</p>
+
+                <p class="mt-4">Visually, the promo is a masterclass in controlled intensity. Punk maintains strong eye contact throughout, creating an intimate connection with the camera that translates to audience engagement. His facial expressions perfectly match the emotional beats of the content, showing confidence mixed with genuine frustration.</p>
+
+                <p class="mt-4">The body language is particularly effective - open power poses when making declarations, leaning forward during intense moments, and well-timed gestures that emphasize key points without becoming distracting. The production quality is professional with excellent framing that keeps focus on the performer.</p>
+            </div>
+        </div>
+
+        <!-- Visual Performance Analysis (NEW!) -->
+        <div class="bg-white rounded-lg shadow-lg p-8 mb-8 animate-slide-in" style="animation-delay: 0.3s">
+            <h3 class="text-2xl font-bold text-gray-900 mb-6 flex items-center">
+                <span class="mr-3">📹</span>
+                Visual Performance Analysis
+            </h3>
+
+            <!-- Metrics Grid -->
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
+                <!-- Facial Expressions -->
+                <div class="border-2 border-green-200 bg-green-50 rounded-lg p-4 transition-all hover:shadow-md">
+                    <div class="flex items-center justify-between mb-2">
+                        <span class="text-3xl">😊</span>
+                        <span class="text-2xl font-bold text-green-600">87/100</span>
+                    </div>
+                    <h4 class="font-semibold text-sm mb-1 text-green-600">Facial Expressions</h4>
+                    <p class="text-xs opacity-75 text-green-600">Emotion conveyance & authenticity</p>
+                </div>
+
+                <!-- Body Language -->
+                <div class="border-2 border-green-200 bg-green-50 rounded-lg p-4 transition-all hover:shadow-md">
+                    <div class="flex items-center justify-between mb-2">
+                        <span class="text-3xl">🤸</span>
+                        <span class="text-2xl font-bold text-green-600">92/100</span>
+                    </div>
+                    <h4 class="font-semibold text-sm mb-1 text-green-600">Body Language</h4>
+                    <p class="text-xs opacity-75 text-green-600">Posture & gestures</p>
+                </div>
+
+                <!-- Visual Presence -->
+                <div class="border-2 border-green-200 bg-green-50 rounded-lg p-4 transition-all hover:shadow-md">
+                    <div class="flex items-center justify-between mb-2">
+                        <span class="text-3xl">⭐</span>
+                        <span class="text-2xl font-bold text-green-600">90/100</span>
+                    </div>
+                    <h4 class="font-semibold text-sm mb-1 text-green-600">Visual Presence</h4>
+                    <p class="text-xs opacity-75 text-green-600">On-camera charisma</p>
+                </div>
+
+                <!-- Production Quality -->
+                <div class="border-2 border-green-200 bg-green-50 rounded-lg p-4 transition-all hover:shadow-md">
+                    <div class="flex items-center justify-between mb-2">
+                        <span class="text-3xl">🎬</span>
+                        <span class="text-2xl font-bold text-green-600">85/100</span>
+                    </div>
+                    <h4 class="font-semibold text-sm mb-1 text-green-600">Production Quality</h4>
+                    <p class="text-xs opacity-75 text-green-600">Lighting & framing</p>
+                </div>
+            </div>
+
+            <!-- Emotion & Gesture Details -->
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mt-8">
+                <!-- Emotion Breakdown -->
+                <div>
+                    <h4 class="text-lg font-semibold text-gray-900 mb-4 flex items-center">
+                        <span class="mr-2">🎭</span>
+                        Emotion Breakdown
+                    </h4>
+                    <div class="space-y-4">
+                        <!-- Confident -->
+                        <div>
+                            <div class="flex items-center justify-between mb-2">
+                                <div class="flex items-center space-x-2">
+                                    <span class="text-lg">💪</span>
+                                    <span class="font-medium text-gray-700">Confident</span>
+                                </div>
+                                <span class="text-sm font-semibold text-gray-600">55%</span>
+                            </div>
+                            <div class="w-full bg-gray-200 rounded-full h-3 overflow-hidden">
+                                <div class="progress-bar h-full rounded-full bg-blue-500" style="--target-width: 55%"></div>
+                            </div>
+                        </div>
+
+                        <!-- Intense -->
+                        <div>
+                            <div class="flex items-center justify-between mb-2">
+                                <div class="flex items-center space-x-2">
+                                    <span class="text-lg">🔥</span>
+                                    <span class="font-medium text-gray-700">Intense</span>
+                                </div>
+                                <span class="text-sm font-semibold text-gray-600">30%</span>
+                            </div>
+                            <div class="w-full bg-gray-200 rounded-full h-3 overflow-hidden">
+                                <div class="progress-bar h-full rounded-full bg-red-500" style="--target-width: 30%; animation-delay: 0.1s"></div>
+                            </div>
+                        </div>
+
+                        <!-- Focused -->
+                        <div>
+                            <div class="flex items-center justify-between mb-2">
+                                <div class="flex items-center space-x-2">
+                                    <span class="text-lg">🎯</span>
+                                    <span class="font-medium text-gray-700">Focused</span>
+                                </div>
+                                <span class="text-sm font-semibold text-gray-600">15%</span>
+                            </div>
+                            <div class="w-full bg-gray-200 rounded-full h-3 overflow-hidden">
+                                <div class="progress-bar h-full rounded-full bg-purple-500" style="--target-width: 15%; animation-delay: 0.2s"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Top Gestures -->
+                <div>
+                    <h4 class="text-lg font-semibold text-gray-900 mb-4 flex items-center">
+                        <span class="mr-2">👋</span>
+                        Top Gestures
+                    </h4>
+                    <div class="space-y-3">
+                        <div class="flex items-center justify-between p-3 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors">
+                            <div class="flex items-center space-x-3">
+                                <span class="text-2xl">☝️</span>
+                                <div>
+                                    <p class="font-medium text-gray-900">Pointing</p>
+                                    <p class="text-sm text-gray-600">Used 8 times</p>
+                                </div>
+                            </div>
+                            <div class="px-3 py-1 rounded-full text-sm font-semibold text-green-600 bg-green-50">
+                                88% effective
+                            </div>
+                        </div>
+
+                        <div class="flex items-center justify-between p-3 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors">
+                            <div class="flex items-center space-x-3">
+                                <span class="text-2xl">✋</span>
+                                <div>
+                                    <p class="font-medium text-gray-900">Open Palm</p>
+                                    <p class="text-sm text-gray-600">Used 5 times</p>
+                                </div>
+                            </div>
+                            <div class="px-3 py-1 rounded-full text-sm font-semibold text-green-600 bg-green-50">
+                                92% effective
+                            </div>
+                        </div>
+
+                        <div class="flex items-center justify-between p-3 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors">
+                            <div class="flex items-center space-x-3">
+                                <span class="text-2xl">✊</span>
+                                <div>
+                                    <p class="font-medium text-gray-900">Fist</p>
+                                    <p class="text-sm text-gray-600">Used 3 times</p>
+                                </div>
+                            </div>
+                            <div class="px-3 py-1 rounded-full text-sm font-semibold text-blue-600 bg-blue-50">
+                                75% effective
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Production Quality -->
+            <div class="mt-8">
+                <h4 class="text-lg font-semibold text-gray-900 mb-4 flex items-center">
+                    <span class="mr-2">🎬</span>
+                    Production Quality
+                </h4>
+                <div class="space-y-4">
+                    <div class="flex items-center justify-between p-4 bg-gray-50 rounded-lg">
+                        <div class="flex items-center space-x-3">
+                            <span class="text-2xl">💡</span>
+                            <div>
+                                <p class="font-medium text-gray-900">Lighting</p>
+                                <p class="text-sm font-semibold text-green-600">Good</p>
+                            </div>
+                        </div>
+                        <div class="text-2xl font-bold text-green-600">82%</div>
+                    </div>
+
+                    <div class="flex items-center justify-between p-4 bg-gray-50 rounded-lg">
+                        <div class="flex items-center space-x-3">
+                            <span class="text-2xl">🎞️</span>
+                            <div>
+                                <p class="font-medium text-gray-900">Framing</p>
+                                <p class="text-sm font-semibold text-green-600">Excellent</p>
+                            </div>
+                        </div>
+                        <div class="text-2xl font-bold text-green-600">90%</div>
+                    </div>
+
+                    <div class="flex items-center justify-between p-4 bg-gray-50 rounded-lg">
+                        <div class="flex items-center space-x-3">
+                            <span class="text-2xl">🖼️</span>
+                            <div>
+                                <p class="font-medium text-gray-900">Background</p>
+                                <p class="text-sm font-semibold text-green-600">Good</p>
+                            </div>
+                        </div>
+                        <div class="text-2xl font-bold text-green-600">85%</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Category Breakdown -->
+        <div class="bg-white rounded-lg shadow-lg p-8 mb-8 animate-slide-in" style="animation-delay: 0.4s">
+            <h3 class="text-2xl font-bold text-gray-900 mb-6">Category Breakdown</h3>
+            <div class="space-y-4">
+                <!-- Psychology -->
+                <div>
+                    <div class="flex justify-between items-center mb-2">
+                        <div>
+                            <h4 class="font-semibold text-gray-900">Psychology</h4>
+                            <p class="text-sm text-gray-600">Understanding of the mental game and storytelling</p>
+                        </div>
+                        <span class="text-xl font-bold text-gray-900">95</span>
+                    </div>
+                    <div class="w-full bg-gray-200 rounded-full h-3">
+                        <div class="progress-bar h-3 rounded-full bg-gradient-to-r from-green-500 to-green-600" style="--target-width: 95%; animation-delay: 0.5s"></div>
+                    </div>
+                </div>
+
+                <!-- Character Work -->
+                <div>
+                    <div class="flex justify-between items-center mb-2">
+                        <div>
+                            <h4 class="font-semibold text-gray-900">Character Work</h4>
+                            <p class="text-sm text-gray-600">Authenticity and distinctiveness of persona</p>
+                        </div>
+                        <span class="text-xl font-bold text-gray-900">92</span>
+                    </div>
+                    <div class="w-full bg-gray-200 rounded-full h-3">
+                        <div class="progress-bar h-3 rounded-full bg-gradient-to-r from-green-500 to-green-600" style="--target-width: 92%; animation-delay: 0.6s"></div>
+                    </div>
+                </div>
+
+                <!-- Delivery -->
+                <div>
+                    <div class="flex justify-between items-center mb-2">
+                        <div>
+                            <h4 class="font-semibold text-gray-900">Delivery</h4>
+                            <p class="text-sm text-gray-600">Voice projection, pacing, and emotional range</p>
+                        </div>
+                        <span class="text-xl font-bold text-gray-900">90</span>
+                    </div>
+                    <div class="w-full bg-gray-200 rounded-full h-3">
+                        <div class="progress-bar h-3 rounded-full bg-gradient-to-r from-green-500 to-green-600" style="--target-width: 90%; animation-delay: 0.7s"></div>
+                    </div>
+                </div>
+
+                <!-- Story Structure -->
+                <div>
+                    <div class="flex justify-between items-center mb-2">
+                        <div>
+                            <h4 class="font-semibold text-gray-900">Story Structure</h4>
+                            <p class="text-sm text-gray-600">Beginning, middle, end with logical progression</p>
+                        </div>
+                        <span class="text-xl font-bold text-gray-900">85</span>
+                    </div>
+                    <div class="w-full bg-gray-200 rounded-full h-3">
+                        <div class="progress-bar h-3 rounded-full bg-gradient-to-r from-green-500 to-green-600" style="--target-width: 85%; animation-delay: 0.8s"></div>
+                    </div>
+                </div>
+
+                <!-- Crowd Connection -->
+                <div>
+                    <div class="flex justify-between items-center mb-2">
+                        <div>
+                            <h4 class="font-semibold text-gray-900">Crowd Connection</h4>
+                            <p class="text-sm text-gray-600">Ability to work with a live audience</p>
+                        </div>
+                        <span class="text-xl font-bold text-gray-900">88</span>
+                    </div>
+                    <div class="w-full bg-gray-200 rounded-full h-3">
+                        <div class="progress-bar h-3 rounded-full bg-gradient-to-r from-green-500 to-green-600" style="--target-width: 88%; animation-delay: 0.9s"></div>
+                    </div>
+                </div>
+
+                <!-- Originality -->
+                <div>
+                    <div class="flex justify-between items-center mb-2">
+                        <div>
+                            <h4 class="font-semibold text-gray-900">Originality</h4>
+                            <p class="text-sm text-gray-600">Fresh takes and creative perspective</p>
+                        </div>
+                        <span class="text-xl font-bold text-gray-900">78</span>
+                    </div>
+                    <div class="w-full bg-gray-200 rounded-full h-3">
+                        <div class="progress-bar h-3 rounded-full bg-gradient-to-r from-blue-500 to-blue-600" style="--target-width: 78%; animation-delay: 1.0s"></div>
+                    </div>
+                </div>
+
+                <!-- Visual Categories (NEW!) -->
+                <div class="mt-6 pt-6 border-t border-gray-200">
+                    <p class="text-sm font-semibold text-purple-600 mb-4">📹 VISUAL ANALYSIS</p>
+
+                    <!-- Facial Expressions -->
+                    <div class="mb-4">
+                        <div class="flex justify-between items-center mb-2">
+                            <div>
+                                <h4 class="font-semibold text-gray-900">Facial Expressions</h4>
+                                <p class="text-sm text-gray-600">Emotion conveyance, authenticity, and eye contact</p>
+                            </div>
+                            <span class="text-xl font-bold text-gray-900">87</span>
+                        </div>
+                        <div class="w-full bg-gray-200 rounded-full h-3">
+                            <div class="progress-bar h-3 rounded-full bg-gradient-to-r from-purple-500 to-purple-600" style="--target-width: 87%; animation-delay: 1.1s"></div>
+                        </div>
+                    </div>
+
+                    <!-- Body Language -->
+                    <div class="mb-4">
+                        <div class="flex justify-between items-center mb-2">
+                            <div>
+                                <h4 class="font-semibold text-gray-900">Body Language</h4>
+                                <p class="text-sm text-gray-600">Posture, gestures, and physical presence</p>
+                            </div>
+                            <span class="text-xl font-bold text-gray-900">92</span>
+                        </div>
+                        <div class="w-full bg-gray-200 rounded-full h-3">
+                            <div class="progress-bar h-3 rounded-full bg-gradient-to-r from-purple-500 to-purple-600" style="--target-width: 92%; animation-delay: 1.2s"></div>
+                        </div>
+                    </div>
+
+                    <!-- Visual Presence -->
+                    <div>
+                        <div class="flex justify-between items-center mb-2">
+                            <div>
+                                <h4 class="font-semibold text-gray-900">Visual Presence</h4>
+                                <p class="text-sm text-gray-600">Camera work, charisma, and overall presentation</p>
+                            </div>
+                            <span class="text-xl font-bold text-gray-900">90</span>
+                        </div>
+                        <div class="w-full bg-gray-200 rounded-full h-3">
+                            <div class="progress-bar h-3 rounded-full bg-gradient-to-r from-purple-500 to-purple-600" style="--target-width: 90%; animation-delay: 1.3s"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Strengths & Weaknesses -->
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-8 mb-8">
+            <div class="bg-white rounded-lg shadow-lg p-8 animate-slide-in" style="animation-delay: 0.5s">
+                <h3 class="text-2xl font-bold text-green-600 mb-4 flex items-center">
+                    <span class="mr-2">💪</span>
+                    Strengths
+                </h3>
+                <ul class="space-y-3">
+                    <li class="flex items-start">
+                        <span class="text-green-500 mr-2 mt-1">✓</span>
+                        <span class="text-gray-700">Exceptional control of emotion and intensity - authentic passion shines through</span>
+                    </li>
+                    <li class="flex items-start">
+                        <span class="text-green-500 mr-2 mt-1">✓</span>
+                        <span class="text-gray-700">Strong eye contact creates intimate connection with audience</span>
+                    </li>
+                    <li class="flex items-start">
+                        <span class="text-green-500 mr-2 mt-1">✓</span>
+                        <span class="text-gray-700">Power poses and open body language convey confidence</span>
+                    </li>
+                    <li class="flex items-start">
+                        <span class="text-green-500 mr-2 mt-1">✓</span>
+                        <span class="text-gray-700">Well-timed gestures emphasize key points effectively</span>
+                    </li>
+                    <li class="flex items-start">
+                        <span class="text-green-500 mr-2 mt-1">✓</span>
+                        <span class="text-gray-700">Professional production with excellent framing keeps focus on performer</span>
+                    </li>
+                </ul>
+            </div>
+
+            <div class="bg-white rounded-lg shadow-lg p-8 animate-slide-in" style="animation-delay: 0.6s">
+                <h3 class="text-2xl font-bold text-orange-600 mb-4 flex items-center">
+                    <span class="mr-2">🎯</span>
+                    Areas to Improve
+                </h3>
+                <ul class="space-y-3">
+                    <li class="flex items-start">
+                        <span class="text-orange-500 mr-2 mt-1">→</span>
+                        <span class="text-gray-700">Occasional moments where intensity could be better modulated</span>
+                    </li>
+                    <li class="flex items-start">
+                        <span class="text-orange-500 mr-2 mt-1">→</span>
+                        <span class="text-gray-700">Some repetitive hand gestures - vary gestures more for emphasis</span>
+                    </li>
+                    <li class="flex items-start">
+                        <span class="text-orange-500 mr-2 mt-1">→</span>
+                        <span class="text-gray-700">Could benefit from slightly better lighting setup</span>
+                    </li>
+                </ul>
+            </div>
+        </div>
+
+        <!-- Timestamped Feedback -->
+        <div class="bg-white rounded-lg shadow-lg p-8 mb-8 animate-slide-in" style="animation-delay: 0.7s">
+            <h3 class="text-2xl font-bold text-gray-900 mb-6">Timestamped Feedback</h3>
+            <div class="space-y-4">
+                <!-- Positive with visual badge -->
+                <div class="border border-green-200 bg-green-50 rounded-lg p-4">
+                    <div class="flex items-start space-x-3">
+                        <div class="flex-shrink-0">
+                            <span class="inline-flex items-center justify-center w-8 h-8 rounded-full bg-white font-bold text-sm text-green-600">✓</span>
+                        </div>
+                        <div class="flex-1">
+                            <div class="flex items-center flex-wrap gap-2 mb-1">
+                                <span class="font-mono text-sm font-semibold text-green-800">00:15</span>
+                                <span class="text-xs uppercase font-medium opacity-75 text-green-800">POSITIVE</span>
+                                <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-white text-xs font-medium text-gray-700">
+                                    <span>👁️</span>
+                                    <span>Eye Contact</span>
+                                </span>
+                            </div>
+                            <p class="text-sm leading-relaxed text-green-800">Excellent eye contact here - directly engaging the camera with intensity that draws the viewer in. This is exactly how you create connection.</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Positive with gesture badge -->
+                <div class="border border-green-200 bg-green-50 rounded-lg p-4">
+                    <div class="flex items-start space-x-3">
+                        <div class="flex-shrink-0">
+                            <span class="inline-flex items-center justify-center w-8 h-8 rounded-full bg-white font-bold text-sm text-green-600">✓</span>
+                        </div>
+                        <div class="flex-1">
+                            <div class="flex items-center flex-wrap gap-2 mb-1">
+                                <span class="font-mono text-sm font-semibold text-green-800">01:23</span>
+                                <span class="text-xs uppercase font-medium opacity-75 text-green-800">POSITIVE</span>
+                                <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-white text-xs font-medium text-gray-700">
+                                    <span>👋</span>
+                                    <span>Gesture</span>
+                                </span>
+                            </div>
+                            <p class="text-sm leading-relaxed text-green-800">The open-palm gesture during "I want you to understand" is perfect - shows openness and sincerity while emphasizing the point.</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Negative with posture badge -->
+                <div class="border border-orange-200 bg-orange-50 rounded-lg p-4">
+                    <div class="flex items-start space-x-3">
+                        <div class="flex-shrink-0">
+                            <span class="inline-flex items-center justify-center w-8 h-8 rounded-full bg-white font-bold text-sm text-orange-600">!</span>
+                        </div>
+                        <div class="flex-1">
+                            <div class="flex items-center flex-wrap gap-2 mb-1">
+                                <span class="font-mono text-sm font-semibold text-orange-800">02:45</span>
+                                <span class="text-xs uppercase font-medium opacity-75 text-orange-800">NEGATIVE</span>
+                                <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-white text-xs font-medium text-gray-700">
+                                    <span>👋</span>
+                                    <span>Gesture</span>
+                                </span>
+                            </div>
+                            <p class="text-sm leading-relaxed text-orange-800">Pointing gesture is becoming repetitive here. Vary your hand movements to maintain visual interest and emphasis.</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Neutral with expression badge -->
+                <div class="border border-blue-200 bg-blue-50 rounded-lg p-4">
+                    <div class="flex items-start space-x-3">
+                        <div class="flex-shrink-0">
+                            <span class="inline-flex items-center justify-center w-8 h-8 rounded-full bg-white font-bold text-sm text-blue-600">→</span>
+                        </div>
+                        <div class="flex-1">
+                            <div class="flex items-center flex-wrap gap-2 mb-1">
+                                <span class="font-mono text-sm font-semibold text-blue-800">03:20</span>
+                                <span class="text-xs uppercase font-medium opacity-75 text-blue-800">NEUTRAL</span>
+                                <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-white text-xs font-medium text-gray-700">
+                                    <span>😊</span>
+                                    <span>Expression</span>
+                                </span>
+                            </div>
+                            <p class="text-sm leading-relaxed text-blue-800">Facial expression shifts effectively match the emotional tone of the content - the intensity in your eyes sells the frustration.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Action Items -->
+        <div class="bg-white rounded-lg shadow-lg p-8 mb-8 animate-slide-in" style="animation-delay: 0.8s">
+            <h3 class="text-2xl font-bold text-gray-900 mb-4 flex items-center">
+                <span class="mr-2">🚀</span>
+                Action Items
+            </h3>
+            <ol class="space-y-3 list-decimal list-inside">
+                <li class="text-gray-700 pl-2">Maintain your exceptional eye contact - this is a major strength that creates connection</li>
+                <li class="text-gray-700 pl-2">Diversify your gesture vocabulary - add more variety to avoid repetition of the pointing gesture</li>
+                <li class="text-gray-700 pl-2">Consider power poses at key declaration moments - you do this well, amplify it</li>
+                <li class="text-gray-700 pl-2">Improve lighting setup with a key light to eliminate minor shadows</li>
+                <li class="text-gray-700 pl-2">Continue the authentic emotional delivery - your genuine passion is your greatest asset</li>
+            </ol>
+        </div>
+
+        <!-- Footer Info -->
+        <div class="bg-gray-100 rounded-lg p-6 text-center animate-slide-in" style="animation-delay: 0.9s">
+            <p class="text-sm text-gray-600 mb-2">
+                <strong>🎭 Wrestling Promo Analyzer</strong> - Multimodal AI Analysis
+            </p>
+            <p class="text-xs text-gray-500">
+                Analyzed with Claude Vision API • Enhanced visual analysis with emotion, gesture & posture detection
+            </p>
+            <p class="text-xs text-purple-600 mt-2 font-semibold">
+                Processing time: 2m 15s • Cost: $0.08
+            </p>
+        </div>
+    </div>
+
+    <script>
+        console.log('🎬 Wrestling Promo Analyzer - Demo UI Loaded');
+        console.log('✅ All visual analysis components displayed');
+        console.log('📊 Mock data shows multimodal analysis results');
+        console.log('🎨 Responsive design with Tailwind CSS');
+        console.log('🚀 Ready for production!');
+    </script>
+</body>
+</html>
