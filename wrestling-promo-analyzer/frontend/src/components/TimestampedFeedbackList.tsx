@@ -27,6 +27,27 @@ export default function TimestampedFeedbackList({ feedback }: TimestampedFeedbac
     }
   }
 
+  const getVisualElementIcon = (element?: string) => {
+    if (!element) return null
+
+    const icons: { [key: string]: string } = {
+      eye_contact: '👁️',
+      gesture: '👋',
+      expression: '😊',
+      posture: '🧍',
+      framing: '🎬',
+      lighting: '💡',
+    }
+
+    return icons[element] || '📹'
+  }
+
+  const getVisualElementLabel = (element?: string) => {
+    if (!element) return null
+
+    return element.replace(/_/g, ' ').replace(/\b\w/g, (l) => l.toUpperCase())
+  }
+
   return (
     <div className="space-y-4">
       {feedback.map((item, index) => (
@@ -42,13 +63,19 @@ export default function TimestampedFeedbackList({ feedback }: TimestampedFeedbac
             </div>
 
             <div className="flex-1">
-              <div className="flex items-center space-x-2 mb-1">
+              <div className="flex items-center flex-wrap gap-2 mb-1">
                 <span className="font-mono text-sm font-semibold">
                   {item.timestamp}
                 </span>
                 <span className="text-xs uppercase font-medium opacity-75">
                   {item.type}
                 </span>
+                {item.visual_element && (
+                  <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-white text-xs font-medium">
+                    <span>{getVisualElementIcon(item.visual_element)}</span>
+                    <span>{getVisualElementLabel(item.visual_element)}</span>
+                  </span>
+                )}
               </div>
               <p className="text-sm leading-relaxed">{item.comment}</p>
             </div>

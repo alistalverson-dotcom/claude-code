@@ -45,12 +45,55 @@ export interface CategoryScores {
   story_structure: number;
   crowd_connection: number;
   originality: number;
+  // Visual scores (multimodal analysis)
+  facial_expressions?: number;
+  body_language?: number;
+  visual_presence?: number;
 }
 
 export interface TimestampedFeedback {
   timestamp: string;
   comment: string;
   type: 'positive' | 'negative' | 'neutral';
+  visual_element?: string; // e.g., "eye_contact", "gesture", "expression"
+}
+
+// Visual Analysis Types
+export interface EmotionBreakdown {
+  [emotion: string]: number; // e.g., {"confident": 0.6, "intense": 0.3}
+}
+
+export interface Gesture {
+  gesture: string;
+  count: number;
+  effectiveness: number;
+}
+
+export interface ProductionQuality {
+  lighting?: number;
+  framing?: number;
+  background?: number;
+  overall?: number;
+}
+
+export interface VisualAnalysisData {
+  emotion_breakdown?: EmotionBreakdown;
+  top_gestures?: Gesture[];
+  production_quality?: ProductionQuality;
+}
+
+export interface VisualAnalysisResponse {
+  id: string;
+  analysis_id: string;
+  facial_expression_score: number | null;
+  body_language_score: number | null;
+  visual_presence_score: number | null;
+  production_quality_score: number | null;
+  emotion_breakdown: EmotionBreakdown | null;
+  gesture_analysis: Gesture[] | null;
+  visual_feedback: TimestampedFeedback[] | null;
+  production_details: ProductionQuality | null;
+  created_at: string;
 }
 
 export interface AnalysisResponse {
@@ -67,6 +110,9 @@ export interface AnalysisResponse {
   processing_time_seconds: number | null;
   token_count: number | null;
   created_at: string;
+  // Visual analysis (multimodal)
+  visual_analysis?: VisualAnalysisData;
+  visual_analysis_details?: VisualAnalysisResponse;
 }
 
 export interface VideoDetailResponse {

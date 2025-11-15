@@ -9,6 +9,10 @@ import ProcessingStatus from '../components/ProcessingStatus'
 import VideoPlayer from '../components/VideoPlayer'
 import ErrorDisplay from '../components/ErrorDisplay'
 import { SkeletonScore, SkeletonCard, SkeletonCategoryBar } from '../components/SkeletonLoader'
+import VisualPerformanceMetrics from '../components/VisualPerformanceMetrics'
+import EmotionBreakdownChart from '../components/EmotionBreakdownChart'
+import GestureAnalysisCard from '../components/GestureAnalysisCard'
+import ProductionQualityCard from '../components/ProductionQualityCard'
 
 export default function VideoDetailPage() {
   const { videoId } = useParams<{ videoId: string }>()
@@ -164,6 +168,67 @@ export default function VideoDetailPage() {
             </div>
           </div>
 
+          {/* Visual Performance Metrics */}
+          {(analysis.category_scores.facial_expressions ||
+            analysis.category_scores.body_language ||
+            analysis.category_scores.visual_presence ||
+            analysis.visual_analysis) && (
+            <div className="bg-white rounded-lg shadow-lg p-8 mb-8">
+              <h3 className="text-2xl font-bold text-gray-900 mb-6 flex items-center">
+                <span className="mr-3">📹</span>
+                Visual Performance Analysis
+              </h3>
+              <VisualPerformanceMetrics
+                facialExpression={analysis.category_scores.facial_expressions}
+                bodyLanguage={analysis.category_scores.body_language}
+                visualPresence={analysis.category_scores.visual_presence}
+                productionQuality={analysis.visual_analysis?.production_quality?.overall}
+              />
+
+              {/* Emotion & Gesture Details */}
+              {analysis.visual_analysis && (
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mt-8">
+                  {/* Emotion Breakdown */}
+                  {analysis.visual_analysis.emotion_breakdown && (
+                    <div>
+                      <h4 className="text-lg font-semibold text-gray-900 mb-4 flex items-center">
+                        <span className="mr-2">🎭</span>
+                        Emotion Breakdown
+                      </h4>
+                      <EmotionBreakdownChart
+                        emotionBreakdown={analysis.visual_analysis.emotion_breakdown}
+                      />
+                    </div>
+                  )}
+
+                  {/* Gesture Analysis */}
+                  {analysis.visual_analysis.top_gestures && (
+                    <div>
+                      <h4 className="text-lg font-semibold text-gray-900 mb-4 flex items-center">
+                        <span className="mr-2">👋</span>
+                        Top Gestures
+                      </h4>
+                      <GestureAnalysisCard gestures={analysis.visual_analysis.top_gestures} />
+                    </div>
+                  )}
+                </div>
+              )}
+
+              {/* Production Quality */}
+              {analysis.visual_analysis?.production_quality && (
+                <div className="mt-8">
+                  <h4 className="text-lg font-semibold text-gray-900 mb-4 flex items-center">
+                    <span className="mr-2">🎬</span>
+                    Production Quality
+                  </h4>
+                  <ProductionQualityCard
+                    productionDetails={analysis.visual_analysis.production_quality}
+                  />
+                </div>
+              )}
+            </div>
+          )}
+
           {/* Category Scores */}
           <div className="bg-white rounded-lg shadow-lg p-8 mb-8">
             <h3 className="text-2xl font-bold text-gray-900 mb-6">
@@ -200,6 +265,29 @@ export default function VideoDetailPage() {
                 score={analysis.category_scores.originality}
                 description="Fresh takes and creative perspective"
               />
+
+              {/* Visual category scores */}
+              {analysis.category_scores.facial_expressions && (
+                <CategoryScoreBar
+                  name="Facial Expressions"
+                  score={analysis.category_scores.facial_expressions}
+                  description="Emotion conveyance, authenticity, and eye contact"
+                />
+              )}
+              {analysis.category_scores.body_language && (
+                <CategoryScoreBar
+                  name="Body Language"
+                  score={analysis.category_scores.body_language}
+                  description="Posture, gestures, and physical presence"
+                />
+              )}
+              {analysis.category_scores.visual_presence && (
+                <CategoryScoreBar
+                  name="Visual Presence"
+                  score={analysis.category_scores.visual_presence}
+                  description="Camera work, charisma, and overall presentation"
+                />
+              )}
             </div>
           </div>
 
