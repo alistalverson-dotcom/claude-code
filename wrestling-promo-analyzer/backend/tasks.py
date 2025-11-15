@@ -1,6 +1,6 @@
 """
 Celery Tasks for Wrestling Promo Analyzer
-Processing Pipeline: Metadata → Audio → Transcription → Analysis
+Processing Pipeline: Metadata → Frames → Audio → Transcription → Multimodal Analysis
 """
 
 import os
@@ -9,7 +9,7 @@ import time
 import subprocess
 from pathlib import Path
 from datetime import datetime
-from typing import Dict, Any, Optional
+from typing import Dict, Any, Optional, List
 from decimal import Decimal
 
 from celery import Celery, chain, group
@@ -21,8 +21,15 @@ from anthropic import Anthropic
 # Local imports
 from config import settings
 from database import SessionLocal
-from models import Video, Transcript, Analysis, ProcessingJob, Judge
+from models import Video, Transcript, Analysis, ProcessingJob, Judge, Frame, VisualAnalysis
 from utils.cost_tracking import calculate_cost
+from utils.frame_extraction import extract_and_analyze_frames
+from utils.visual_analysis import analyze_frames, get_key_frame_analysis_summary
+from utils.multimodal_claude import (
+    MultimodalClaudeClient,
+    select_frames_for_api,
+    build_multimodal_prompt,
+)
 
 # ============================================================================
 # CELERY APP CONFIGURATION
@@ -417,22 +424,137 @@ def transcribe_audio(self, video_id: str, audio_data: Dict[str, Any]) -> Dict[st
 
 
 # ============================================================================
-# TASK 4: ANALYZE WITH JAKE MORRISON
+# TASK 3.5: EXTRACT AND ANALYZE FRAMES (Multimodal)
+# ============================================================================
+
+@app.task(bind=True, max_retries=2)
+def extract_frames_task(self, video_id: str, metadata: Dict[str, Any]) -> Dict[str, Any]:
+    """
+    Extract key frames from video and perform visual analysis
+
+    Args:
+        video_id: UUID of video to process
+        metadata: Video metadata from extract_metadata task
+
+    Returns:
+        Dict with frame_count and key_frame_paths
+    """
+    logger.info(f"[TASK 3.5/5] Starting frame extraction for video {video_id}")
+
+    db = SessionLocal()
+    try:
+        # Get video from database
+        video = db.query(Video).filter(Video.id == video_id).first()
+        if not video:
+            raise ValueError(f"Video {video_id} not found in database")
+
+        file_path = Path(video.file_path)
+        if not file_path.exists():
+            raise FileNotFoundError(f"Video file not found: {file_path}")
+
+        # Extract frames with intelligent selection
+        logger.info(f"Extracting frames from video...")
+        start_time = time.time()
+
+        frames_data = extract_and_analyze_frames(
+            video_path=str(file_path),
+            video_id=video_id,
+            interval_seconds=3.0,  # Extract frame every 3 seconds
+            target_key_frames=10   # Target 10 key frames for Claude
+        )
+
+        extraction_time = time.time() - start_time
+        logger.info(f"Frame extraction completed in {extraction_time:.2f}s")
+        logger.info(f"Extracted {len(frames_data)} total frames")
+
+        # Perform visual analysis on frames
+        logger.info(f"Performing visual analysis on frames...")
+        frame_paths = [f["file_path"] for f in frames_data]
+        visual_analyses = analyze_frames(frame_paths)
+
+        # Combine frame data with visual analysis
+        for i, frame_data in enumerate(frames_data):
+            if i < len(visual_analyses):
+                # Add visual analysis results to frame data
+                visual_result = visual_analyses[i]
+                frame_data["faces_detected"] = visual_result.get("faces_detected", 0)
+                frame_data["primary_face_confidence"] = visual_result.get("primary_face_confidence", Decimal("0.0"))
+
+        # Save frames to database
+        frame_records = []
+        for frame_data in frames_data:
+            frame_record = Frame(
+                video_id=video.id,
+                frame_number=frame_data["frame_number"],
+                timestamp_seconds=frame_data["timestamp_seconds"],
+                file_path=frame_data["file_path"],
+                width=frame_data.get("width"),
+                height=frame_data.get("height"),
+                file_size_bytes=frame_data.get("file_size_bytes"),
+                faces_detected=frame_data.get("faces_detected", 0),
+                primary_face_confidence=frame_data.get("primary_face_confidence"),
+                scene_change_score=frame_data.get("scene_change_score"),
+                motion_level=frame_data.get("motion_level"),
+                importance_score=frame_data.get("importance_score"),
+                is_key_frame=frame_data.get("is_key_frame", False),
+            )
+            frame_records.append(frame_record)
+            db.add(frame_record)
+
+        db.commit()
+
+        # Get key frames for Claude API
+        key_frames = [f for f in frames_data if f.get("is_key_frame", False)]
+        key_frame_paths = [f["file_path"] for f in key_frames]
+
+        # Get visual analysis summary
+        summary = get_key_frame_analysis_summary(visual_analyses)
+
+        logger.info(f"✅ Frame extraction and analysis complete:")
+        logger.info(f"   Total frames: {len(frames_data)}")
+        logger.info(f"   Key frames: {len(key_frames)}")
+        logger.info(f"   Face detection rate: {summary.get('face_detection_rate', 0):.2%}")
+
+        return {
+            'frame_count': len(frames_data),
+            'key_frame_count': len(key_frames),
+            'key_frame_paths': key_frame_paths,
+            'visual_summary': summary,
+        }
+
+    except Exception as e:
+        logger.error(f"❌ Frame extraction failed: {e}")
+        # Don't fail the whole pipeline - continue without frames
+        logger.warning("Continuing pipeline without visual analysis")
+        return {
+            'frame_count': 0,
+            'key_frame_count': 0,
+            'key_frame_paths': [],
+            'visual_summary': {},
+            'error': str(e),
+        }
+    finally:
+        db.close()
+
+
+# ============================================================================
+# TASK 4: ANALYZE WITH JAKE MORRISON (Multimodal)
 # ============================================================================
 
 @app.task(bind=True, max_retries=3)
-def analyze_with_jake(self, video_id: str, transcript_data: Dict[str, Any]) -> Dict[str, Any]:
+def analyze_with_jake(self, video_id: str, transcript_data: Dict[str, Any], frame_data: Dict[str, Any] = None) -> Dict[str, Any]:
     """
-    Analyze promo using Jake Morrison AI judge (Claude API)
+    Analyze promo using Jake Morrison AI judge with multimodal Claude Vision API
 
     Args:
         video_id: UUID of video to process
         transcript_data: Transcript text and metadata from previous task
+        frame_data: Frame extraction data (optional for backward compatibility)
 
     Returns:
         Dict with analysis_id and overall_score
     """
-    logger.info(f"[TASK 4/4] Starting Jake Morrison analysis for video {video_id}")
+    logger.info(f"[TASK 5/5] Starting Jake Morrison multimodal analysis for video {video_id}")
 
     db = SessionLocal()
     try:
@@ -450,11 +572,84 @@ def analyze_with_jake(self, video_id: str, transcript_data: Dict[str, Any]) -> D
         if not jake:
             raise ValueError("Jake Morrison judge not found in database")
 
-        # Initialize Claude client
-        client = Anthropic(api_key=settings.ANTHROPIC_API_KEY)
+        # Get key frames for multimodal analysis
+        key_frame_paths = []
+        use_multimodal = False
 
-        # Build analysis prompt
-        user_prompt = f"""Analyze this wrestling promo transcript:
+        if frame_data and frame_data.get('key_frame_paths'):
+            key_frame_paths = frame_data['key_frame_paths']
+            use_multimodal = len(key_frame_paths) > 0
+            logger.info(f"Using multimodal analysis with {len(key_frame_paths)} frames")
+        else:
+            logger.warning("No frames available - using text-only analysis")
+
+        # Build video metadata for prompt
+        video_metadata = {
+            'promo_title': video.promo_title,
+            'duration_seconds': float(video.duration_seconds) if video.duration_seconds else 0,
+            'character_type': video.character_type,
+            'promo_type': video.promo_type,
+            'promo_context': video.promo_context,
+        }
+
+        # Call Claude API (multimodal if frames available)
+        logger.info(f"Calling Claude API ({settings.ANTHROPIC_MODEL})...")
+        start_time = time.time()
+
+        if use_multimodal:
+            # Use multimodal Claude client
+            multimodal_client = MultimodalClaudeClient(
+                api_key=settings.ANTHROPIC_API_KEY,
+                model=settings.ANTHROPIC_MODEL
+            )
+
+            # Build multimodal prompt
+            frame_timestamps = []
+            for frame_path in key_frame_paths:
+                # Extract timestamp from frame path or database
+                # For now, use evenly distributed timestamps
+                # TODO: Get actual timestamps from database
+                pass
+
+            # Get actual frame timestamps from database
+            key_frames = db.query(Frame).filter(
+                Frame.video_id == video.id,
+                Frame.is_key_frame == True
+            ).order_by(Frame.timestamp_seconds).all()
+
+            frame_timestamps = [float(f.timestamp_seconds) for f in key_frames]
+
+            user_prompt = build_multimodal_prompt(
+                transcript=transcript.full_text,
+                video_metadata=video_metadata,
+                frame_timestamps=frame_timestamps,
+                num_frames=len(key_frame_paths)
+            )
+
+            # Make multimodal API call
+            response = multimodal_client.analyze_with_vision(
+                system_prompt=jake.system_prompt,
+                user_text=user_prompt,
+                frame_paths=key_frame_paths,
+                max_tokens=settings.ANTHROPIC_MAX_TOKENS,
+                temperature=settings.ANTHROPIC_TEMPERATURE,
+            )
+
+            response_text = response["response_text"]
+            input_tokens = response["usage"]["input_tokens"]
+            output_tokens = response["usage"]["output_tokens"]
+            images_sent = response["images_sent"]
+
+            # Mark frames as sent to API
+            for frame in key_frames:
+                frame.sent_to_api = True
+            db.commit()
+
+        else:
+            # Fallback to text-only analysis (old method)
+            client = Anthropic(api_key=settings.ANTHROPIC_API_KEY)
+
+            user_prompt = f"""Analyze this wrestling promo transcript:
 
 **Promo Title:** {video.promo_title or 'Untitled'}
 **Character Type:** {video.character_type or 'Not specified'}

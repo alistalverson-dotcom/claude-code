@@ -6,6 +6,12 @@ from .cost_tracking import calculate_cost, get_cost_summary, get_model_pricing_i
 from .logging_config import setup_logging, get_logger, log_api_request, log_task_event
 from .frame_extraction import extract_and_analyze_frames, cleanup_frames, FrameExtractor
 from .visual_analysis import analyze_frames, get_key_frame_analysis_summary, VisualAnalyzer
+from .multimodal_claude import (
+    MultimodalClaudeClient,
+    select_frames_for_api,
+    estimate_vision_cost,
+    build_multimodal_prompt,
+)
 
 __all__ = [
     # Cost tracking
@@ -25,4 +31,9 @@ __all__ = [
     "analyze_frames",
     "get_key_frame_analysis_summary",
     "VisualAnalyzer",
+    # Multimodal Claude
+    "MultimodalClaudeClient",
+    "select_frames_for_api",
+    "estimate_vision_cost",
+    "build_multimodal_prompt",
 ]
