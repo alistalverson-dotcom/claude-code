@@ -16,7 +16,7 @@ The Wrestling Promo Analyzer uses the Claude API in a **multimodal** way, sendin
 ┌─────────────────────────────────────────────────────────────────┐
 │  1. EXTRACT COMPONENTS                                          │
 │     • Audio → Whisper AI → Transcript                           │
-│     • Video → FFmpeg → Frames (every 2 seconds)                 │
+│     • Video → FFmpeg → Frames (every 1.5-2 seconds)             │
 │     • Metadata (duration, resolution, etc.)                     │
 └─────────────────────────────────────────────────────────────────┘
                               ↓
@@ -32,8 +32,11 @@ The Wrestling Promo Analyzer uses the Claude API in a **multimodal** way, sendin
 └─────────────────────────────────────────────────────────────────┘
                               ↓
 ┌─────────────────────────────────────────────────────────────────┐
-│  3. FRAME SELECTION (Cost Optimization)                         │
-│     • Select 10-15 "key frames" (most important moments)        │
+│  3. FRAME SELECTION (Duration-Based Optimization)               │
+│     • Select 15-60 key frames based on video duration           │
+│       - 30s videos: 15-20 frames (every 1.5-2s)                 │
+│       - 3min videos: 30-40 frames (every 4.5-6s)                │
+│       - 5min+ videos: 40-60 frames (capped for cost)            │
 │     • Compress images to ~100KB each (JPEG, 85% quality)        │
 │     • Encode to base64 for API transmission                     │
 └─────────────────────────────────────────────────────────────────┘
@@ -58,7 +61,7 @@ The Wrestling Promo Analyzer uses the Claude API in a **multimodal** way, sendin
 │  │ - Frame timestamps (0.5s, 2.3s, 4.7s...)            │     │
 │  │ - Task instructions (JSON format required)           │     │
 │  │                                                       │     │
-│  │ IMAGE BLOCKS (10-15 frames):                         │     │
+│  │ IMAGE BLOCKS (15-60 frames, duration-based):         │     │
 │  │ - Frame 1: base64 encoded JPEG                       │     │
 │  │ - Frame 2: base64 encoded JPEG                       │     │
 │  │ - ... (chronological order)                          │     │
@@ -504,18 +507,18 @@ image_tokens = num_images * 1500  # Average
 text_tokens = 2000  # Prompt + transcript
 total_input = image_tokens + text_tokens
 
-# For 10 images:
-# Input: (10 * 1500) + 2000 = 17,000 tokens
-# Output: ~2000 tokens
-# Total: ~19,000 tokens
+# Example: 3-minute video with 35 frames
+# Input: (35 * 1500) + 2000 = 54,500 tokens
+# Output: ~2500 tokens (more timestamped feedback)
+# Total: ~57,000 tokens
 
 # Cost (Claude 3.5 Sonnet):
 # Input: $3 per 1M tokens
 # Output: $15 per 1M tokens
 #
-# = (17000 * 3 / 1000000) + (2000 * 15 / 1000000)
-# = $0.051 + $0.030
-# = $0.081 per analysis
+# = (54500 * 3 / 1000000) + (2500 * 15 / 1000000)
+# = $0.164 + $0.038
+# = $0.202 per analysis (~$0.20-0.30 range)
 ```
 
 **Stored in database:**
@@ -549,9 +552,39 @@ total_input = image_tokens + text_tokens
 - ✅ Type-safe parsing with validation
 
 ### **4. Cost Optimization**
-- ✅ Frame selection (10-15 vs. all frames)
+- ✅ Frame selection (15-60 frames based on duration vs. all frames)
 - ✅ Image compression (100KB vs. original size)
 - ✅ Efficient prompt design (reusable system prompt)
+
+### **4a. Duration-Based Frame Coverage** ⚡ *Enhanced for Accuracy*
+
+For improved analysis accuracy, especially for 3-minute promos, the system now uses **duration-based frame density**:
+
+| Video Duration | Frames Sent | Frame Interval | Coverage | Est. Cost |
+|----------------|-------------|----------------|----------|-----------|
+| 30 seconds     | 15-20       | Every 1.5-2s   | Very dense | $0.08-0.12 |
+| 2 minutes      | 25-30       | Every 4-5s     | Dense | $0.20-0.30 |
+| **3 minutes**  | **30-40**   | **Every 4.5-6s** | **Dense** | **$0.25-0.40** |
+| 5 minutes      | 40-50       | Every 6-8.5s   | Moderate | $0.40-0.60 |
+| 10+ minutes    | 50-60       | Every 10-12s   | Moderate | $0.70-1.20 |
+
+**Key Benefits:**
+- 📊 **Better temporal coverage**: 30-40 frames for 3-min videos (vs. old 10-15)
+- 🎯 **More timestamped feedback**: ~10-12 observations (vs. old 5-8)
+- 💡 **Improved accuracy**: Captures more critical moments in performance
+- 💰 **Cost-controlled**: Capped at 60 frames for very long videos
+
+**Implementation:**
+```python
+def calculate_optimal_frame_count(duration_seconds: float) -> Tuple[int, int]:
+    """Auto-scale frame count based on video duration"""
+    if duration_seconds <= 60:
+        return (15, 20)  # 1 frame every ~3-4s
+    elif duration_seconds <= 180:
+        return (30, 40)  # 1 frame every ~4.5-6s (3-min videos)
+    else:
+        return (50, 60)  # Capped for cost efficiency
+```
 
 ### **5. Character-Based Feedback**
 - ✅ System prompt defines personality (Jake Morrison)
@@ -631,7 +664,7 @@ total_input = image_tokens + text_tokens
 
 1. **Extracts** transcript and frames from video
 2. **Pre-analyzes** frames with computer vision
-3. **Selects** 10-15 key frames for cost efficiency
+3. **Selects** 15-60 key frames based on video duration for optimal accuracy
 4. **Encodes** images to base64 for API transmission
 5. **Constructs** prompts with system (personality) + user (task) components
 6. **Sends** multimodal content (text + images) to Claude
@@ -639,9 +672,9 @@ total_input = image_tokens + text_tokens
 8. **Stores** analysis with token tracking
 9. **Displays** results to user in React frontend
 
-**Cost:** ~$0.03-0.08 per video with multimodal analysis
+**Cost:** ~$0.08-0.40 per video depending on duration (updated for increased frame density)
 **Processing Time:** ~60-120 seconds for Claude API call
-**Quality:** Comprehensive feedback combining verbal + visual analysis
+**Quality:** Comprehensive feedback with enhanced temporal coverage (30-40 frames for 3-min videos)
 
 The system uses **three specialized prompts**:
 - **System Prompt**: Judge personality (Jake Morrison)

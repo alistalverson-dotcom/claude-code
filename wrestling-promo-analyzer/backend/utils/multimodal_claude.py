@@ -259,27 +259,75 @@ class MultimodalClaudeClient:
             raise MultimodalClaudeError(f"API call failed: {e}")
 
 
+def calculate_optimal_frame_count(duration_seconds: float) -> Tuple[int, int]:
+    """
+    Calculate optimal frame count based on video duration for better accuracy.
+
+    Strategy for 3-minute videos and under:
+    - More frames = better temporal coverage
+    - Scale frame count with duration
+    - Cap at reasonable limit for cost/performance
+
+    Args:
+        duration_seconds: Video duration in seconds
+
+    Returns:
+        Tuple of (target_count, max_count)
+    """
+    # For videos up to 3 minutes, use higher frame density for accuracy
+    if duration_seconds <= 60:
+        # 0-60s: 15-20 frames (1 frame every ~3-4 seconds)
+        return (15, 20)
+    elif duration_seconds <= 120:
+        # 60-120s: 20-30 frames (1 frame every ~4-6 seconds)
+        return (25, 30)
+    elif duration_seconds <= 180:
+        # 120-180s (3 min): 30-40 frames (1 frame every ~4.5-6 seconds)
+        return (30, 40)
+    elif duration_seconds <= 300:
+        # 180-300s (5 min): 35-50 frames (1 frame every ~6-8.5 seconds)
+        return (40, 50)
+    else:
+        # 5+ min: Cap at 50-60 for cost efficiency
+        return (50, 60)
+
+
 def select_frames_for_api(
     frames: List[Dict],
-    target_count: int = 10,
-    max_count: int = 15
+    video_duration: Optional[float] = None,
+    target_count: Optional[int] = None,
+    max_count: Optional[int] = None
 ) -> List[Dict]:
     """
-    Select frames to send to Claude Vision API
+    Select frames to send to Claude Vision API with duration-based optimization.
 
     Strategy:
-    1. Filter to key frames only
-    2. If too many, select top N by importance
-    3. Ensure temporal distribution
+    1. Calculate optimal frame count based on duration (if provided)
+    2. Filter to key frames only
+    3. If too many, select top N by importance
+    4. Ensure temporal distribution
 
     Args:
         frames: List of frame dictionaries with is_key_frame and importance_score
-        target_count: Target number of frames
-        max_count: Maximum frames (hard limit due to API constraints)
+        video_duration: Video duration in seconds (for auto-scaling)
+        target_count: Target number of frames (overrides auto-scaling)
+        max_count: Maximum frames (overrides auto-scaling)
 
     Returns:
         List of selected frames, sorted by timestamp
     """
+    # Calculate optimal counts based on duration if not specified
+    if target_count is None or max_count is None:
+        if video_duration:
+            auto_target, auto_max = calculate_optimal_frame_count(video_duration)
+            target_count = target_count or auto_target
+            max_count = max_count or auto_max
+            logger.info(f"Duration {video_duration:.0f}s → Using {target_count} target, {max_count} max frames")
+        else:
+            # Fallback to original defaults
+            target_count = target_count or 10
+            max_count = max_count or 15
+
     # Filter to key frames
     key_frames = [f for f in frames if f.get("is_key_frame", False)]
 
@@ -308,7 +356,7 @@ def select_frames_for_api(
     # Sort by timestamp for chronological presentation
     key_frames = sorted(key_frames, key=lambda f: float(f["timestamp_seconds"]))
 
-    logger.info(f"Selected {len(key_frames)} frames for API")
+    logger.info(f"✅ Selected {len(key_frames)} frames for API (1 frame every ~{video_duration/len(key_frames) if video_duration and len(key_frames) > 0 else 0:.1f}s)")
     return key_frames
 
 
@@ -322,16 +370,27 @@ def estimate_vision_cost(
     """
     Estimate cost of multimodal Claude API call
 
+    Updated for increased frame density (as of frame coverage improvements):
+    - 30-second videos: 15-20 frames
+    - 2-minute videos: 25-30 frames
+    - 3-minute videos: 30-40 frames (NEW - increased for better accuracy)
+    - 5-minute videos: 40-50 frames
+    - 10+ minute videos: 50-60 frames (capped for cost control)
+
     Claude Vision pricing:
     - Images are counted as tokens based on size
     - Approximate: 1 image ≈ 1000-2000 tokens (depends on size/resolution)
     - Text tokens: Standard pricing
 
+    Example costs (Claude 3.5 Sonnet):
+    - 3-minute promo with 35 frames: ~$0.30-0.40
+    - 5-minute promo with 45 frames: ~$0.40-0.60
+
     Args:
-        num_images: Number of images
-        avg_image_size_kb: Average image size in KB
+        num_images: Number of images (frames)
+        avg_image_size_kb: Average image size in KB (default 100KB after compression)
         text_tokens: Estimated text tokens in prompt
-        output_tokens: Estimated output tokens
+        output_tokens: Estimated output tokens (typically 2000-3000 for full analysis)
         model: Claude model
 
     Returns:
@@ -342,6 +401,7 @@ def estimate_vision_cost(
     # Estimate image tokens
     # Rough approximation: ~10 tokens per KB of image
     # A 100KB JPEG ≈ 1000 tokens
+    # After compression (85% quality, max 1568px), frames are typically 80-120KB
     image_tokens_per_image = avg_image_size_kb * 10
     total_image_tokens = num_images * image_tokens_per_image
 
@@ -352,7 +412,7 @@ def estimate_vision_cost(
     cost = calculate_cost(total_input_tokens, output_tokens, model)
 
     logger.info(
-        f"Cost estimate: {num_images} images (~{total_image_tokens} tokens) + "
+        f"Cost estimate: {num_images} frames (~{total_image_tokens} image tokens) + "
         f"{text_tokens} text tokens = ${cost:.4f}"
     )
 
@@ -453,11 +513,13 @@ Provide detailed analysis with:
 
 5. **Weaknesses** (3-5 bullet points): Areas for improvement (both verbal and visual)
 
-6. **Timestamped Feedback**: Specific moments with analysis
+6. **Timestamped Feedback**: Specific moments with analysis throughout the promo
    Format: [{{"timestamp": "00:15", "comment": "...", "type": "positive/negative", "visual_element": "eye_contact/gesture/expression/etc"}}]
+   - Provide at least {min(12, max(8, num_frames // 3))} timestamped observations spread across the entire promo
    - Reference specific frames when giving visual feedback
    - Note when body language matches or contradicts the words
    - Highlight powerful visual moments
+   - Cover beginning, middle, and end portions equally
 
 7. **Specific Recommendations** (3-5 actionable items): How to improve, including visual performance tips
 

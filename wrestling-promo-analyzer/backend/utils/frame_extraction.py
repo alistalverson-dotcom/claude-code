@@ -37,9 +37,9 @@ class FrameExtractor:
     def __init__(
         self,
         output_dir: str = "uploads/frames",
-        interval_seconds: float = 3.0,  # Extract frame every 3 seconds
-        max_frames_per_video: int = 100,  # Maximum frames to extract
-        target_key_frames: int = 10,  # Target number for Claude API
+        interval_seconds: float = 1.5,  # Extract frame every 1.5 seconds for better accuracy
+        max_frames_per_video: int = 150,  # Maximum frames to extract (increased for 3-min videos)
+        target_key_frames: int = 30,  # Target number for Claude API (increased for accuracy)
     ):
         """
         Initialize frame extractor

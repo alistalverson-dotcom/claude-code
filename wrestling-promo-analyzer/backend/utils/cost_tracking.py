@@ -219,21 +219,36 @@ def get_model_pricing_info(model: str = None) -> Dict:
 
 
 # Quick cost reference for common scenarios
+# Updated for increased frame density (15-60 frames based on duration)
 COST_REFERENCES = {
     "short_promo_30s": {
-        "description": "30-second promo (~100 words transcript)",
-        "estimated_cost": "$0.05 - $0.10",
+        "description": "30-second promo (~100 words transcript, 15-20 frames)",
+        "estimated_cost": "$0.08 - $0.12",
+        "frames": "15-20",
+        "frame_interval": "~1.5-2s",
     },
     "medium_promo_2min": {
-        "description": "2-minute promo (~400 words transcript)",
-        "estimated_cost": "$0.15 - $0.25",
+        "description": "2-minute promo (~400 words transcript, 25-30 frames)",
+        "estimated_cost": "$0.20 - $0.30",
+        "frames": "25-30",
+        "frame_interval": "~4-5s",
+    },
+    "medium_promo_3min": {
+        "description": "3-minute promo (~600 words transcript, 30-40 frames)",
+        "estimated_cost": "$0.25 - $0.40",
+        "frames": "30-40",
+        "frame_interval": "~4.5-6s",
     },
     "long_promo_5min": {
-        "description": "5-minute promo (~1000 words transcript)",
-        "estimated_cost": "$0.30 - $0.50",
+        "description": "5-minute promo (~1000 words transcript, 40-50 frames)",
+        "estimated_cost": "$0.40 - $0.60",
+        "frames": "40-50",
+        "frame_interval": "~6-8.5s",
     },
     "very_long_promo_10min": {
-        "description": "10-minute promo (~2000 words transcript)",
-        "estimated_cost": "$0.60 - $1.00",
+        "description": "10-minute promo (~2000 words transcript, 50-60 frames max)",
+        "estimated_cost": "$0.70 - $1.20",
+        "frames": "50-60",
+        "frame_interval": "~10-12s",
     },
 }

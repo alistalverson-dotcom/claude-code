@@ -457,11 +457,31 @@ def extract_frames_task(self, video_id: str, metadata: Dict[str, Any]) -> Dict[s
         logger.info(f"Extracting frames from video...")
         start_time = time.time()
 
+        # Calculate optimal frame settings based on duration
+        # For 3-min videos: extract every 1.5s, target 30 frames for accuracy
+        duration = float(video.duration_seconds) if video.duration_seconds else 180.0
+
+        # Scale extraction interval and target based on duration
+        if duration <= 60:
+            interval_seconds = 2.0  # 1-min: every 2s
+            target_key_frames = 15
+        elif duration <= 120:
+            interval_seconds = 1.5  # 2-min: every 1.5s
+            target_key_frames = 25
+        elif duration <= 180:
+            interval_seconds = 1.5  # 3-min: every 1.5s (more granular)
+            target_key_frames = 30
+        else:
+            interval_seconds = 2.0  # 3+ min: every 2s (balance accuracy/cost)
+            target_key_frames = 40
+
+        logger.info(f"Video duration: {duration:.0f}s → Using {interval_seconds}s interval, targeting {target_key_frames} key frames")
+
         frames_data = extract_and_analyze_frames(
             video_path=str(file_path),
             video_id=video_id,
-            interval_seconds=3.0,  # Extract frame every 3 seconds
-            target_key_frames=10   # Target 10 key frames for Claude
+            interval_seconds=interval_seconds,
+            target_key_frames=target_key_frames
         )
 
         extraction_time = time.time() - start_time
