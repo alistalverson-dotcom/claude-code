@@ -2,6 +2,7 @@ import { useState, useRef } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { uploadVideo } from '../services/api'
 import { CHARACTER_TYPES, PROMO_TYPES, type VideoUploadForm } from '../types'
+import { ErrorDisplayCompact } from '../components/ErrorDisplay'
 
 export default function UploadPage() {
   const navigate = useNavigate()
@@ -253,9 +254,14 @@ export default function UploadPage() {
 
           {/* Error Message */}
           {error && (
-            <div className="mt-6 bg-red-50 border border-red-200 text-red-800 px-4 py-3 rounded-lg">
-              <p className="font-medium">Error</p>
-              <p className="text-sm">{error}</p>
+            <div className="mt-6">
+              <ErrorDisplayCompact
+                error={error}
+                onRetry={() => {
+                  setError(null)
+                  if (!file) fileInputRef.current?.click()
+                }}
+              />
             </div>
           )}
 

@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom'
 import { listVideos, formatDuration } from '../services/api'
 import type { VideoListItem } from '../types'
 import { SkeletonList } from '../components/SkeletonLoader'
+import { ErrorDisplayCompact } from '../components/ErrorDisplay'
 
 export default function VideosListPage() {
   const [videos, setVideos] = useState<VideoListItem[]>([])
@@ -90,12 +91,7 @@ export default function VideosListPage() {
       {loading && <SkeletonList />}
 
       {/* Error State */}
-      {error && (
-        <div className="bg-red-50 border border-red-200 text-red-800 px-4 py-3 rounded-lg">
-          <p className="font-medium">Error</p>
-          <p className="text-sm">{error}</p>
-        </div>
-      )}
+      {error && <ErrorDisplayCompact error={error} onRetry={loadVideos} />}
 
       {/* Videos List */}
       {!loading && !error && videos.length === 0 && (

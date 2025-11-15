@@ -7,6 +7,7 @@ import TimestampedFeedbackList from '../components/TimestampedFeedbackList'
 import TranscriptView from '../components/TranscriptView'
 import ProcessingStatus from '../components/ProcessingStatus'
 import VideoPlayer from '../components/VideoPlayer'
+import ErrorDisplay from '../components/ErrorDisplay'
 import { SkeletonScore, SkeletonCard, SkeletonCategoryBar } from '../components/SkeletonLoader'
 
 export default function VideoDetailPage() {
@@ -88,11 +89,13 @@ export default function VideoDetailPage() {
   if (error || !video) {
     return (
       <div className="max-w-6xl mx-auto">
-        <div className="bg-red-50 border border-red-200 text-red-800 px-6 py-4 rounded-lg">
-          <p className="font-medium">Error</p>
-          <p className="text-sm">{error || 'Video not found'}</p>
-          <Link to="/videos" className="text-sm underline mt-2 inline-block">
-            Back to videos
+        <ErrorDisplay
+          error={error || 'Video not found'}
+          onRetry={() => videoId && loadVideo(videoId)}
+        />
+        <div className="mt-4">
+          <Link to="/videos" className="text-purple-600 hover:text-purple-700 font-medium">
+            ← Back to videos
           </Link>
         </div>
       </div>
